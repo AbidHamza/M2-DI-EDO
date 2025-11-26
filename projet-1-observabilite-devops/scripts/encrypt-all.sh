@@ -1,8 +1,9 @@
 #!/bin/bash
 # Script pour chiffrer toutes les corrections
-# Usage: ./encrypt-all.sh
+# Usage: ./encrypt-all.sh [mot-de-passe]
+# Si aucun mot de passe n'est fourni, utilise "M2DI-EDO-2025" par défaut
 
-PASSWORD="M2DI-EDO-2025"
+PASSWORD="${1:-M2DI-EDO-2025}"
 
 find . -path "*/corrections/*.md" ! -name "*.encrypted" -type f | while read file; do
     encrypted_file="${file}.encrypted"

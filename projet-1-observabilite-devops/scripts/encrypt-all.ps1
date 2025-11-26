@@ -1,7 +1,10 @@
 # Script PowerShell pour chiffrer toutes les corrections
-# Usage: .\encrypt-all.ps1
+# Usage: .\encrypt-all.ps1 [mot-de-passe]
+# Si aucun mot de passe n'est fourni, utilise "M2DI-EDO-2025" par défaut
 
-$PASSWORD = "M2DI-EDO-2025"
+param(
+    [string]$PASSWORD = "M2DI-EDO-2025"
+)
 
 Get-ChildItem -Recurse -Path . -Filter "CORRECTION.md" | Where-Object { $_.FullName -like "*corrections*" -and $_.Name -notlike "*.encrypted" } | ForEach-Object {
     $file = $_.FullName
