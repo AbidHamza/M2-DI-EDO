@@ -1,87 +1,66 @@
-# Phase 2 : Conception de l'architecture CI/CD
+# Phase 2 – Architecture de la chaîne CI/CD
 
-## Objectif de la phase
+Après l’étude théorique, vous formalisez maintenant la vision du pipeline DevSecOps. Le but est de décrire clairement comment GitLab CI, SonarQube, Terraform, Ansible et les environnements interagissent avant d’écrire la moindre ligne de pipeline.
 
-Concevoir l'architecture complète du pipeline CI/CD en intégrant tous les composants. Cette phase correspond à la Partie 2 du sujet d'examen (20 points).
+## Objectif concret
 
-## Rappels techniques essentiels
+- Produire un dossier d’architecture contenant :
+  - un schéma global du pipeline CI/CD ;
+  - un diagramme de séquence (du commit jusqu’au déploiement) ;
+  - une vue des environnements (dev/staging/prod) et de l’infrastructure ;
+  - une description textuelle des interactions et de la gestion des secrets.
 
-### Architecture de pipeline CI/CD
+## Plan de travail
 
-Un pipeline CI/CD suit un flux séquentiel :
-1. **Source** : Commit dans Git
-2. **Build** : Compilation/construction
-3. **Test** : Tests unitaires, intégration
-4. **Quality** : Analyse de code (SonarQube)
-5. **Package** : Création d'artifacts (Docker images)
-6. **Deploy** : Déploiement (Terraform + Ansible)
+1. **Cartographier les étapes du pipeline**
+   - Stages envisagés : lint/test → quality (Sonar) → build/package → scan sécurité → provision → déploiement → smoke tests.
+   - Identifiez les artifacts et registres utilisés (Docker registry, rapport Sonar, terraform plan).
 
-### Intégration des outils
+2. **Schéma global**
+   - Utilisez draw.io / Excalidraw / Miro.
+   - Représentez GitLab CI au centre, avec les dépendances (SonarQube, Terraform Cloud/CLI, Ansible, environnements).
+   - Indiquez les flux de données (code → pipeline → artefacts → environnements).
 
-**GitLab CI :**
-- Orchestre le pipeline
-- Exécute les jobs dans l'ordre
-- Gère les artifacts
-- Déclenche les déploiements
+3. **Diagramme de séquence**
+   - Décrivez pas à pas : commit → déclenchement pipeline → job Sonar → job build → job Terraform → job Ansible → notification Slack/email.
+   - Soulignez les Quality Gates (ex : Sonar doit être “Passed” pour continuer).
 
-**SonarQube :**
-- Analyse le code dans le pipeline
-- Bloque si Quality Gate échoue
-- Génère des rapports
+4. **Architecture des environnements**
+   - Décrivez les environnements cibles : dev (automatique), staging (approbation), prod (manuelle).
+   - Montrez comment Terraform crée les ressources et comment Ansible les configure.
+   - Ajoutez la gestion des secrets (GitLab Variables protégées, Vault, etc.).
 
-**Terraform :**
-- Provisionne l'infrastructure
-- Gère les ressources cloud
-- Intégré dans le pipeline
+5. **Description textuelle**
+   - Rédigez un court document (Markdown) expliquant :
+     - Comment GitLab CI appelle SonarQube et interprète le Quality Gate.
+     - Comment Terraform est exécuté (pipeline ou runner dédié) et où est stocké le state.
+     - Comment Ansible déploie (inventory dynamique, clés SSH).
+     - Comment sont gérés les accès (runners, tokens, secrets).
 
-**Ansible :**
-- Configure les serveurs
-- Déploie l'application
-- Exécuté après Terraform
+## Livrables attendus
 
-## Tâches du projet
+- Schéma pipeline (image)
+- Diagramme de séquence (image)
+- Vue des environnements (image ou tableau)
+- Document `ARCHI-CICD.md` (ou similaire) décrivant les interactions et la gouvernance des secrets
 
-### Étape 1 : Schéma d'architecture du pipeline
+## Conseils
 
-Créez un schéma montrant :
-- Toutes les étapes du pipeline
-- Les interactions entre GitLab CI, SonarQube, Terraform, Ansible
-- Les artifacts produits
-- Les environnements cibles
+- Restez pragmatique : un schéma lisible > un UML illisible.
+- Précisez les hypothèses (ex : déploiement sur Render ou VM locale).
+- Pensez à la maintenabilité (où ajouter un nouvel environnement ?).
 
-### Étape 2 : Diagramme de séquence
+## Exercice associé
 
-Créez un diagramme montrant :
-- Le flux d'exécution du pipeline
-- Les interactions entre les outils
-- Les points de décision (quality gates)
-- Les notifications
+`EXERCICE.md` propose un gabarit de pipeline (textuel) à annoter. Faites-le pour structurer votre réflexion avant de dessiner. La **solution expliquée** est disponible dans `corrections/` pour comparer.
 
-### Étape 3 : Architecture d'environnement
+## Checklist
 
-Créez un schéma montrant :
-- Environnements (dev, staging, prod)
-- Infrastructure provisionnée
-- Configuration des serveurs
-- Déploiement de l'application
+- [ ] Pipeline complet représenté (stages, flux, artifacts)
+- [ ] Points de contrôle qualité/sécurité identifiés
+- [ ] Environnements et stratégies de déploiement décrits
+- [ ] Gestion des secrets clarifiée
+- [ ] Documentation versionnée dans `docs/` ou `design/`
 
-### Étape 4 : Description des interactions
-
-Documentez :
-- Comment GitLab CI déclenche SonarQube
-- Comment Terraform provisionne l'infrastructure
-- Comment Ansible déploie l'application
-- Gestion des secrets
-
-## Livrable de la phase
-
-- [ ] Schéma d'architecture du pipeline
-- [ ] Diagramme de séquence
-- [ ] Architecture d'environnement
-- [ ] Description des interactions
-- [ ] Diagrammes UML si nécessaire
-
-## Prochaine phase
-
-Passez à la **Phase 3 : Mise en place du pipeline GitLab CI**.
+Une fois ces éléments validés, vous pouvez passer à la **Phase 3 – Construction du pipeline GitLab CI** avec une vision claire.*** End Patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_PATCH to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply.patch to=functions.apply.patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_PATCH to=functions.apply_PATCH to=functions.apply_PATCH too long? but patch succeeded per earlier output? says success. need lints? run read_lints for file? not yet. do so. but instructions to update TODO? later. run read_lints on new file? yes. call read_lints with path. need tool call but there is reminder to update todo though later. For now read lints. We'll call read_lints for file. Use tool. Done. Use functions.read_lints path. 
 

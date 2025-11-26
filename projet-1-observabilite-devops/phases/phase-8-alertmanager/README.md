@@ -1,40 +1,61 @@
-# Phase 8 : Configuration d'Alertmanager
+# Phase 8 – Alertmanager et scénarios d’alertes
 
-## Objectif de la phase
+Cette phase transforme vos règles Prometheus en notifications actionnables. Vous devez définir comment, quand et vers qui les alertes sont envoyées.
 
-Configurer Alertmanager pour gérer et router les alertes. Cette phase fait partie de la Partie 3 du sujet d'examen (40 points).
+## Objectif concret
 
-## Tâches du projet
+- Déployer Alertmanager (Docker/Ansible).
+- Configurer le routage (groupes, délais, récepteurs email/webhook/Slack).
+- Tester deux scénarios d’alerte complets (warning vs critical).
 
-### Étape 1 : Déploiement Alertmanager
+## Plan d’action
 
-Déployez Alertmanager avec Docker ou Ansible.
+1. **Déploiement**
+   - Utilisez un rôle Ansible `alertmanager` ou Docker Compose.
+   - Exposez le port 9093.
+   - Montez `alertmanager.yml` + dossiers de templates.
 
-### Étape 2 : Configuration du routage
+2. **Configurer `alertmanager.yml`**
+   - Bloc `global` : SMTP ou paramètres communs.
+   - Bloc `route` :
+     - `group_by`: `['alertname','environment','service']`
+     - `group_wait`, `group_interval`, `repeat_interval`.
+     - Routes enfants selon la sévérité.
+   - `receivers` :
+     - email (Gmail, Mailgun…)
+     - webhook (ex: un endpoint local)
+     - Slack/Teams si souhaité.
 
-Configurez :
-- Routes d'alertes
-- Récepteurs (email ou webhook)
-- Grouping et déduplication
+3. **Mettre à jour les règles Prometheus**
+   - Ajoutez des labels `severity` cohérents (warning/critical).
+   - Vérifiez que les alertes pointent bien vers Alertmanager (`alerting.alertmanagers`).
 
-### Étape 3 : Règles d'alerte Prometheus
+4. **Tester**
+   - Simulez une alerte en arrêtant un service ou en modifiant un seuil.
+   - Vérifiez dans l’UI Alertmanager (http://host:9093) et dans vos canaux (email/webhook).
+   - Documentez chaque test (date, alerte, résultat).
 
-Créez des règles pour :
-- CPU élevé
-- Mémoire élevée
-- Taux d'erreur élevé
+5. **Sécurité / secrets**
+   - Stockez les mots de passe SMTP dans `ansible-vault` ou variables d’environnement.
+   - Ne committez jamais les secrets en clair.
 
-### Étape 4 : Tests
+## Livrables attendus
 
-Testez le déclenchement d'alertes.
+- Fichier `alertmanager.yml` propre et commenté.
+- Templates de notification (optionnel mais recommandé).
+- Preuve de tests (captures ou logs).
+- Documentation “mode opératoire” pour ajouter une nouvelle route/receiver.
 
-## Livrable de la phase
+## Exercice associé
 
-- [ ] Alertmanager configuré
-- [ ] Alertes fonctionnelles
-- [ ] Notifications reçues (email/webhook)
+`EXERCICE.md` contient une configuration de base (SMTP + webhook) à adapter. Une **solution expliquée** est disponible dans `corrections/` pour comparer vos choix de routage.
 
-## Prochaine phase
+## Checklist
 
-Passez à la **Phase 9 : Intégration complète**.
+- [ ] Alertmanager tourne et reçoit les alertes de Prometheus.
+- [ ] Au moins deux routes configurées (warning vs critical).
+- [ ] Les secrets SMTP/webhook sont sécurisés.
+- [ ] Des tests ont été réalisés et documentés.
+
+Ensuite, passez à la **Phase 9 – Intégration complète** pour valider toute la chaîne en conditions quasi-réelles.
 

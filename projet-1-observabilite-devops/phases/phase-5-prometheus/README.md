@@ -1,56 +1,64 @@
-# Phase 5 : Déploiement de Prometheus
+# Phase 5 – Déploiement et configuration de Prometheus
 
-## Objectif de la phase
+Vous disposez maintenant d’une infrastructure et d’un outil d’automatisation. Cette phase se concentre sur la collecte de métriques via Prometheus, gérée par vos rôles Ansible.
 
-Configurer Prometheus pour collecter des métriques applicatives. Cette phase fait partie de la Partie 3 du sujet d'examen (40 points).
+## Objectif concret
 
-## Rappels techniques essentiels
+- Déployer Prometheus (conteneur ou service) avec une configuration adaptée.
+- Scraper l’application exemple, les exporters systèmes et tout composant pertinent.
+- Préparer des règles d’alerte qui seront envoyées à Alertmanager (phase 8).
 
-### Configuration Prometheus
+## Plan de travail recommandé
 
-Prometheus se configure via `prometheus.yml` :
-- **scrape_configs** : Configuration du scraping
-- **alerting** : Configuration des alertes
-- **rule_files** : Fichiers de règles
+1. **Installer / déployer Prometheus**
+   - Utilisez Ansible (`roles/prometheus`) ou Docker Compose.
+   - Prévoyez un volume persistant (`/prometheus`).
+   - Vérifiez que le service écoute sur le port 9090.
 
-### Métriques à collecter
+2. **Configurer `prometheus.yml`**
+   - Bloc `global` : intervalles de scraping/évaluation.
+   - `scrape_configs` :
+     - Prometheus lui-même (`localhost:9090`).
+     - Application Flask (`app:5000/metrics`).
+     - Exporters système (Node Exporter `:9100`, cAdvisor, etc.).
+     - Autres services (base de données, etc.) si disponibles.
+   - `alerting` : pointez déjà vers Alertmanager (même si non déployé, laissez un placeholder).
+   - `rule_files` : référencez vos fichiers d’alertes (`alerts/*.yml`).
 
-Pour une application :
-- CPU, mémoire, disque
-- Latence des requêtes
-- Taux d'erreur
-- Débit (throughput)
+3. **Ajouter les exporters nécessaires**
+   - Node Exporter pour la machine (ou conteneur) Prometheus.
+   - Exporter custom de l’application (ex: instrumentation Flask déjà fournie).
+   - Documentez comment ajouter un nouvel exporter (fichier README).
 
-## Tâches du projet
+4. **Valider les targets et les métriques**
+   - Interface Prometheus → `Status > Targets`.
+   - Page `Graph` pour tester vos requêtes PromQL (latence, erreurs, etc.).
+   - Ajoutez au moins 2 règles d’alerte simples (service down, latence élevée).
 
-### Étape 1 : Déploiement Prometheus
+5. **Automatiser via Ansible**
+   - Template Jinja2 pour `prometheus.yml`.
+   - Variables par environnement (ex: `group_vars/dev/prometheus.yml`).
+   - Handler pour redémarrer Prometheus uniquement quand la config change.
 
-Déployez Prometheus avec Docker ou Ansible.
+## Livrables attendus
 
-### Étape 2 : Configuration du scraping
+- Service Prometheus opérationnel (Docker/VM) et supervisé par Ansible.
+- Fichier `prometheus.yml` propre, commenté et versionné.
+- Exporters déployés + documentation pour les lancer/les surveiller.
+- Requêtes PromQL et captures montrant les métriques collectées.
+- Règles d’alerte initiales.
 
-Configurez :
-- Targets à scraper
-- Fréquence de scraping
-- Labels
+## Exercice associé
 
-### Étape 3 : Exporters
+`EXERCICE.md` vous fait configurer un `prometheus.yml` complet (scraping application + Node Exporter + alertes). Réalisez-le pour consolider vos connaissances avant d’intégrer la configuration dans Ansible. La **solution expliquée** est disponible dans `corrections/`.
 
-Configurez des exporters pour :
-- Node Exporter (métriques système)
-- Application (métriques applicatives)
+## Checklist de fin de phase
 
-### Étape 4 : Validation
+- [ ] Prometheus collecte les métriques de l’application exemple.
+- [ ] Les targets apparaissent en `UP`.
+- [ ] De premières alertes sont visibles dans l’onglet `Alerts`.
+- [ ] La configuration est templatisée dans Ansible (pas de fichier manuel).
+- [ ] Les ports/volumes sont documentés.
 
-Vérifiez que Prometheus collecte les métriques.
-
-## Livrable de la phase
-
-- [ ] Prometheus déployé et fonctionnel
-- [ ] Configuration du scraping
-- [ ] Métriques collectées et visibles
-
-## Prochaine phase
-
-Passez à la **Phase 6 : Déploiement de Loki**.
+Vous pouvez maintenant passer à la **Phase 6 – Loki** pour centraliser les logs et compléter la stack d’observabilité.
 

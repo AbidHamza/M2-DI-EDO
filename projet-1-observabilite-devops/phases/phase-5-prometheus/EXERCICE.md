@@ -1,123 +1,80 @@
-# Exercice Phase 5 : Configuration Prometheus complète
+# Exercice Phase 5 – Configurer Prometheus de A à Z
 
-## Exercice à réaliser
+## Objectif
 
-Configurez Prometheus pour collecter des métriques depuis l'application exemple et des métriques système.
+Construire un fichier `prometheus.yml` complet qui :
+- scrappe l’application exemple (`/metrics`) ;
+- récupère les métriques système (Node Exporter) ;
+- déclare un lien avec Alertmanager ;
+- charge un fichier de règles d’alertes.
 
-## Correction complète
+## Étapes guidées
 
-```yaml
-# prometheus.yml
-global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-  external_labels:
-    cluster: 'observability-demo'
-    environment: 'development'
+1. **Créer le fichier `prometheus.yml`**
+   ```yaml
+   global:
+     scrape_interval: 15s
+     evaluation_interval: 15s
+     external_labels:
+       cluster: observability-demo
+       environment: development
+   ```
 
-# Configuration des alertes
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-          - alertmanager:9093
+2. **Configurer Alertmanager**
+   ```yaml
+   alerting:
+     alertmanagers:
+       - static_configs:
+           - targets:
+               - alertmanager:9093
+   ```
 
-# Fichiers de règles d'alerte
-rule_files:
-  - "alerts.yml"
+3. **Déclarer les fichiers de règles**
+   ```yaml
+   rule_files:
+     - "alerts.yml"
+   ```
 
-# Configuration du scraping
-scrape_configs:
-  # Métriques Prometheus lui-même
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
-        labels:
-          service: 'prometheus'
+4. **Ajouter les `scrape_configs`**
+   - Prometheus lui-même (`localhost:9090`)
+   - Application (`app:5000`, `metrics_path: /metrics`, labels `service`/`environment`)
+   - Node Exporter (`node-exporter:9100`)
+   - Ajustez les intervalles (`scrape_interval`) si besoin.
 
-  # Métriques de l'application exemple
-  - job_name: 'example-app'
-    static_configs:
-      - targets: ['app:5000']
-        labels:
-          service: 'example-api'
-          environment: 'development'
-    metrics_path: '/metrics'
-    scrape_interval: 10s
+5. **Créer `alerts.yml`**
+   - Alertes recommandées :
+     - `ServiceDown` : `up{job="example-app"} == 0`
+     - `HighLatency` : `histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1`
+     - `HighErrorRate` : `rate(app_errors_total[5m]) > 0.1`
+   - Fournissez labels (`severity`) et annotations (`summary`, `description`).
 
-  # Métriques système (Node Exporter)
-  - job_name: 'node-exporter'
-    static_configs:
-      - targets: ['node-exporter:9100']
-        labels:
-          service: 'system'
-```
+6. **Tester localement**
+   - Lancez Prometheus en Docker :
+     ```bash
+     docker run -d --name prometheus \
+       -p 9090:9090 \
+       -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+       -v $(pwd)/alerts.yml:/etc/prometheus/alerts.yml \
+       prom/prometheus:latest
+     ```
+   - Vérifiez les targets et les alertes dans l’interface.
 
-```yaml
-# alerts.yml - Règles d'alerte
-groups:
-  - name: application_alerts
-    interval: 30s
-    rules:
-      - alert: HighErrorRate
-        expr: rate(app_errors_total[5m]) > 0.1
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High error rate detected"
-          description: "Error rate is {{ $value }} errors/second"
+## Vérifications
 
-      - alert: HighLatency
-        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High latency detected"
-          description: "95th percentile latency is {{ $value }}s"
+- Tous les jobs apparaissent en `UP`.
+- Les métriques `http_request_duration_seconds` et `app_errors_total` existent (générer du trafic si nécessaire).
+- Les alertes passent par les états `Pending` puis `Firing` lorsque vous simulez un incident (par exemple en arrêtant l’application).
 
-      - alert: ServiceDown
-        expr: up{job="example-app"} == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Service is down"
-          description: "Example app service is not responding"
-```
+## Solution expliquée
 
-## Explications détaillées
+La configuration complète commentée se trouve dans `corrections/solution-expliquee` (fichier chiffré). Comparez avec votre travail pour vérifier :
+- le nommage des jobs/labels ;
+- la factorisation via des `scrape_configs` communs ;
+- la pertinence des seuils.
 
-**global.scrape_interval** : Fréquence de collecte par défaut
+## Pour aller plus loin
 
-**alerting.alertmanagers** : Configuration d'Alertmanager
-
-**rule_files** : Fichiers contenant les règles d'alerte
-
-**scrape_configs** : Configuration des targets à scraper
-
-**job_name** : Identifiant du job de scraping
-
-**static_configs** : Liste statique des targets
-
-**labels** : Métadonnées ajoutées aux métriques
-
-**alerts.yml** : Règles pour déclencher des alertes
-
-**expr** : Expression PromQL pour l'alerte
-
-**for** : Durée avant déclenchement
-
-## Vérification
-
-1. Vérifiez les targets dans Prometheus (Status > Targets)
-2. Vérifiez les métriques collectées (Graph)
-3. Vérifiez les règles d'alerte (Alerts)
-
-## Problèmes courants
-
-- **Targets DOWN** : Vérifiez la connectivité réseau
-- **Pas de métriques** : Vérifiez le chemin /metrics
-- **Alertes non déclenchées** : Vérifiez la syntaxe PromQL
+- Ajouter la découverte dynamique (`file_sd`, `docker_sd`) si vous utilisez Docker Compose ou Kubernetes.
+- Tester des règles d’enregistrement (`recording rules`) pour simplifier certaines requêtes PromQL.
+- Brancher directement Alertmanager et simuler l’envoi d’une notification.
 

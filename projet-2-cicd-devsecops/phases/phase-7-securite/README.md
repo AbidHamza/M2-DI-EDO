@@ -1,36 +1,50 @@
-# Phase 7 : Sécurisation de la chaîne
+# Phase 7 – Sécurisation de la chaîne CI/CD
 
-## Objectif de la phase
+Cette phase renforce la sécurité : gestion des secrets, scans de dépendances/images et politiques de protection des branches/environnements.
 
-Gérer les secrets de manière sécurisée et intégrer des scans de sécurité. Cette phase fait partie de la Partie 3 du sujet d'examen (40 points).
+## Objectif concret
 
-## Tâches du projet
+- Définir un plan de gestion des secrets (GitLab variables protégées, Vault, Ansible Vault).
+- Ajouter au pipeline des jobs de sécurité (Trivy, Snyk, GitLab Security scans).
+- S’assurer que les logs pipeline ne divulguent jamais d’informations sensibles.
 
-### Étape 1 : Gestion des secrets
+## Plan d’action
 
-Configurez :
-- Variables protégées GitLab
-- Ou gestionnaire de secrets (Vault)
-- Secrets pour Terraform et Ansible
+1. **Gestion des secrets**
+   - Lister tous les secrets utilisés (tokens Sonar, clés Terraform, SSH, DB, etc.).
+   - Stocker ces secrets dans GitLab CI/CD > Variables (Protected + Masked) ou dans Vault.
+   - Utiliser `ansible-vault` pour les variables Ansible sensibles.
 
-### Étape 2 : Scan de sécurité
+2. **Politique d’accès**
+   - Restreindre les variables protégées aux branches `main`/`prod`.
+   - Activer les approvals sur les environnements sensibles.
+   - Auditer les permissions (runners, mainteneurs).
 
-Intégrez :
-- Scan de dépendances
-- Scan d'images Docker
-- Rapports de sécurité
+3. **Scans de sécurité**
+   - Ajouter un job `dependency_scan` (npm audit, pip-audit, etc.).
+   - Ajouter un job `container_scan` (Trivy sur l’image Docker).
+   - Faire échouer le pipeline si des vulnérabilités critiques sont détectées.
 
-### Étape 3 : Validation
+4. **Validation**
+   - Vérifier que les secrets n’apparaissent pas dans les logs.
+   - Documenter les procédures de rotation de secrets.
 
-Vérifiez que les secrets ne sont pas exposés.
+## Livrables attendus
 
-## Livrable de la phase
+- Tableau ou doc listant les secrets + emplacement (GitLab variable, Vault, etc.).
+- Jobs de scan intégrés au `.gitlab-ci.yml`.
+- Preuves (logs, captures) montrant que les secrets ne sont pas exposés.
 
-- [ ] Secrets gérés de manière sécurisée
-- [ ] Scans de sécurité intégrés
-- [ ] Aucun secret en clair dans le code
+## Exercice associé
 
-## Prochaine phase
+`EXERCICE.md` vous guide pour créer des variables protégées, utiliser `ansible-vault` et intégrer un job Trivy. Faites-le avant de sécuriser vos propres playbooks/pipelines. La **solution expliquée** se trouve dans `corrections/`.
 
-Passez à la **Phase 8 : Intégration complète**.
+## Checklist
+
+- [ ] Toutes les clés/API sont stockées de façon chiffrée ou protégée.
+- [ ] Les jobs de scan fail en cas de vulnérabilité critique.
+- [ ] Aucune donnée sensible dans les logs pipeline.
+- [ ] Procédures de rotation documentées.
+
+Ensuite, passez à la **Phase 8 – Intégration complète** pour valider la chaîne bout en bout avec ces garanties de sécurité.*** End Patch
 

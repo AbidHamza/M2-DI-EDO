@@ -1,223 +1,82 @@
-# Exercice Phase 6 : Configuration complète de Loki
+# Exercice Phase 6 – Stack Loki + Promtail
 
-## Exercice à réaliser
+## Objectif
 
-Configurez Loki pour ingérer et indexer les logs de l'application exemple.
+Déployer Loki et Promtail via Docker Compose pour collecter les logs de l’application exemple (ou de vos conteneurs Docker) et vérifier qu’ils sont consultables dans Grafana.
 
-## Correction complète
+## Étapes guidées
 
-### Configuration Loki
+1. **Créer un fichier `loki-config.yml`**
+   - `auth_enabled: false` (lab)
+   - Ports : `http_listen_port: 3100`
+   - Stockage : `filesystem` (`/loki/chunks`, `/loki/rules`)
+   - Schéma : `boltdb-shipper` (simple et adapté aux environnements locaux)
 
-```yaml
-# loki-config.yml
-auth_enabled: false
+2. **Créer `promtail-config.yml`**
+   ```yaml
+   server:
+     http_listen_port: 9080
+     grpc_listen_port: 0
 
-server:
-  http_listen_port: 3100
-  grpc_listen_port: 9096
+   positions:
+     filename: /tmp/positions.yaml
 
-common:
-  path_prefix: /loki
-  storage:
-    filesystem:
-      chunks_directory: /loki/chunks
-      rules_directory: /loki/rules
-  replication_factor: 1
-  ring:
-    instance_addr: 127.0.0.1
-    kvstore:
-      store: inmemory
+   clients:
+     - url: http://loki:3100/loki/api/v1/push
+   ```
+   - Ajoutez deux `scrape_configs` :
+     - Découverte des conteneurs Docker avec `docker_sd_configs` + `relabel_configs` (labels `container`, `service`, `stream`).
+     - Lecture de fichiers `/var/log/app/*.log` avec `pipeline_stages` pour parser du JSON (`timestamp`, `level`, `message`).
 
-schema_config:
-  configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
-      object_store: filesystem
-      schema: v11
-      index:
-        prefix: index_
-        period: 24h
+3. **Écrire `docker-compose.yml`**
+   ```yaml
+   version: "3.8"
+   services:
+     loki:
+       image: grafana/loki:latest
+       ports:
+         - "3100:3100"
+       volumes:
+         - ./loki-config.yml:/etc/loki/local-config.yaml
+         - loki-data:/loki
+       command: -config.file=/etc/loki/local-config.yaml
 
-ruler:
-  alertmanager_url: http://alertmanager:9093
+     promtail:
+       image: grafana/promtail:latest
+       volumes:
+         - ./promtail-config.yml:/etc/promtail/config.yml
+         - /var/run/docker.sock:/var/run/docker.sock
+         - /var/log:/var/log:ro
+       command: -config.file=/etc/promtail/config.yml
+       depends_on:
+         - loki
 
-# Limites
-limits_config:
-  reject_old_samples: true
-  reject_old_samples_max_age: 168h
-  ingestion_rate_mb: 16
-  ingestion_burst_size_mb: 32
-```
-
-### Configuration Promtail
-
-```yaml
-# promtail-config.yml
-server:
-  http_listen_port: 9080
-  grpc_listen_port: 0
-
-positions:
-  filename: /tmp/positions.yaml
-
-clients:
-  - url: http://loki:3100/loki/api/v1/push
-
-scrape_configs:
-  # Logs depuis Docker
-  - job_name: docker
-    docker_sd_configs:
-      - host: unix:///var/run/docker.sock
-        refresh_interval: 5s
-    relabel_configs:
-      - source_labels: ['__meta_docker_container_name']
-        regex: '/(.*)'
-        target_label: 'container'
-      - source_labels: ['__meta_docker_container_log_stream']
-        target_label: 'stream'
-      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
-        target_label: 'service'
-    
-  # Logs depuis fichiers
-  - job_name: app-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: example-app
-          environment: development
-          __path__: /var/log/app/*.log
-    pipeline_stages:
-      - json:
-          expressions:
-            timestamp: timestamp
-            level: level
-            message: message
-      - labels:
-          level:
-      - timestamp:
-          source: timestamp
-          format: RFC3339
-```
-
-### Docker Compose pour Loki
-
-```yaml
-# docker-compose-loki.yml
-version: '3.8'
-
-services:
-  loki:
-    image: grafana/loki:latest
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki-config.yml:/etc/loki/local-config.yaml
-      - loki-data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - observability
-
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - ./promtail-config.yml:/etc/promtail/config.yml
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/log:/var/log:ro
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - observability
-    depends_on:
-      - loki
-
-volumes:
-  loki-data:
-
-networks:
-  observability:
-    external: true
-```
-
-## Explications détaillées
-
-### Configuration Loki
-
-**server** : Ports d'écoute HTTP et gRPC
-
-**common.storage** : Stockage des chunks et règles
-
-**schema_config** : Configuration du schéma de stockage
-
-**limits_config** : Limites de taux et taille
-
-### Configuration Promtail
-
-**clients** : URL de Loki pour envoyer les logs
-
-**scrape_configs** : Configuration de collecte
-
-**docker_sd_configs** : Découverte automatique des conteneurs Docker
-
-**relabel_configs** : Transformation des labels
-
-**pipeline_stages** : Traitement des logs (parse JSON, extraction)
-
-### Labels importants
-
-Les labels permettent d'indexer et de rechercher :
-- `job` : Nom du job
-- `service` : Nom du service
-- `environment` : Environnement (dev, prod)
-- `level` : Niveau de log (INFO, ERROR)
-
-## Requêtes LogQL
-
-### Requêtes de base
-
-```logql
-# Tous les logs d'un service
-{service="example-app"}
-
-# Logs d'erreur
-{service="example-app", level="ERROR"}
-
-# Logs avec un texte spécifique
-{service="example-app"} |= "error"
-
-# Comptage de logs par niveau
-sum(count_over_time({service="example-app"}[5m])) by (level)
-
-# Taux d'erreur
-rate({service="example-app", level="ERROR"}[5m])
-```
-
-## Intégration avec Grafana
-
-1. Ajoutez Loki comme datasource dans Grafana
-2. URL : `http://loki:3100`
-3. Créez des panels de logs dans vos dashboards
-4. Utilisez LogQL pour filtrer et analyser
-
-## Vérification
-
-1. Vérifiez que Loki ingère les logs :
-   ```bash
-   curl http://localhost:3100/ready
+   volumes:
+     loki-data:
    ```
 
-2. Vérifiez les logs dans Grafana :
-   - Créez un panel de type "Logs"
-   - Utilisez la query : `{service="example-app"}`
+4. **Lancer et tester**
+   ```bash
+   docker compose up -d
+   curl http://localhost:3100/ready
+   ```
+   - Ajoutez Loki comme datasource dans Grafana (`http://localhost:3100`).
+   - Dans Explore, exécutez `{service="example-app"}` puis `{service="example-app", level="ERROR"}`.
 
-3. Testez les requêtes LogQL dans Grafana Explore
+## Vérifications attendues
 
-## Problèmes courants
+- Les conteneurs Loki/Promtail sont `UP`.
+- Les logs de l’application apparaissent et peuvent être filtrés par label.
+- Les pipelines JSON fonctionnent (le label `level` est disponible).
+- Les positions (`positions.yaml`) sont mises à jour lorsque vous taillez un fichier.
 
-- **Pas de logs** : Vérifiez la configuration Promtail
-- **Labels manquants** : Vérifiez relabel_configs
-- **Logs non parsés** : Vérifiez pipeline_stages
+## Solution expliquée
 
-## Prochaine phase
+Le dossier `corrections/` contient une solution complète (config Loki + Promtail + requêtes LogQL). Consultez-la après votre tentative pour comprendre l’impact des paramètres (`limits_config`, `pipeline_stages`, `relabel_configs`).
 
-Passez à la **Phase 7 : Création de dashboards Grafana**.
+## Variantes
+
+- Ajouter un pipeline `multiline` pour regrouper les traces d’erreurs.
+- Envoyer les logs vers Loki en HTTPS (avec authentification).
+- Gérer la configuration via un rôle Ansible pour la réutiliser dans le projet principal.
 

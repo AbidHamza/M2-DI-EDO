@@ -1,33 +1,69 @@
-# Phase 6 : Configuration et déploiement avec Ansible
+# Phase 6 – Configuration et déploiement avec Ansible
 
-## Objectif de la phase
+Après le provisionnement, Ansible prend le relais pour installer les dépendances, déployer l’application et valider que tout fonctionne. Cette phase doit aboutir à des playbooks rejouables et intégrés dans GitLab CI.
 
-Automatiser la configuration et le déploiement avec Ansible. Cette phase fait partie de la Partie 3 du sujet d'examen (40 points).
+## Objectif concret
 
-## Tâches du projet
+- Structurer un dossier `ansible/` (inventaires, roles, playbooks).
+- Automatiser l’installation (Docker, dépendances) et le déploiement de l’application.
+- Relier Ansible à la pipeline (job `deploy`/`post-deploy`).
 
-### Étape 1 : Playbooks Ansible
+## Plan d’action
 
-Créez des playbooks pour :
-- Configuration des serveurs
-- Déploiement de l'application
-- Configuration Docker
+1. **Structure recommandée**
+   ```
+   ansible/
+   ├── playbooks/
+   │   ├── setup.yml        # installation de base
+   │   └── deploy.yml       # déploiement applicatif
+   ├── roles/
+   │   ├── docker/
+   │   └── app/
+   ├── inventories/
+   │   ├── dev/hosts
+   │   └── prod/hosts
+   ├── group_vars/
+   └── ansible.cfg
+   ```
 
-### Étape 2 : Intégration pipeline
+2. **Rôles essentiels**
+   - `docker` : installe Docker/compose, configure le service.
+   - `app` : déploie l’image depuis le registry, gère les variables et health checks.
 
-Intégrez Ansible dans le pipeline GitLab CI.
+3. **Inventaires et variables**
+   - `inventories/dev/hosts` (VM Terraform ou Docker local).
+   - Variables pour ports, images, secrets (utiliser `ansible-vault` si besoin).
 
-### Étape 3 : Validation
+4. **Playbooks**
+   - `setup.yml` : appliquer le rôle `docker` + prérequis.
+   - `deploy.yml` : récupérer l’image (`docker_login`), lancer conteneur ou `docker-compose`, vérifier `/health`.
 
-Testez le déploiement automatique.
+5. **Intégration GitLab CI**
+   - Job `deploy_dev` lancer `ansible-playbook` via SSH (utiliser `SSH_PRIVATE_KEY` dans les variables).
+   - Export des outputs Terraform → inventaire dynamique (option bonus).
 
-## Livrable de la phase
+6. **Validation**
+   - `ansible-playbook -i inventories/dev playbooks/deploy.yml`.
+   - Health check automatisé (module `uri`).
 
-- [ ] Playbooks Ansible fonctionnels
-- [ ] Intégration dans le pipeline
-- [ ] Déploiement automatisé fonctionnel
+## Livrables attendus
 
-## Prochaine phase
+- Dossier Ansible propre + documentation d’exécution.
+- Playbooks rejouables (idempotents).
+- Job pipeline utilisant Ansible (log d’exécution).
+- Preuve de déploiement (capture, endpoint accessible).
 
-Passez à la **Phase 7 : Sécurisation de la chaîne**.
+## Exercice associé
+
+`EXERCICE.md` vous guide pour écrire un playbook `deploy.yml` qui installe Docker, récupère l’image et lance le conteneur. Réalisez-le avant d’industrialiser votre propre rôle. La **solution expliquée** est dans `corrections/`.
+
+## Checklist
+
+- [ ] Inventaires pour au moins dev/staging.
+- [ ] Rôles découpés (docker/app).
+- [ ] Déploiement automatisé et vérifié (health check).
+- [ ] Intégration pipeline (job `deploy_*`).
+- [ ] Secrets Ansible sécurisés (Vault ou variables GitLab).
+
+Vous pouvez maintenant passer à la **Phase 7 – Sécurisation de la chaîne** pour renforcer la gestion des secrets et des contrôles de sécurité.*** End Patch
 

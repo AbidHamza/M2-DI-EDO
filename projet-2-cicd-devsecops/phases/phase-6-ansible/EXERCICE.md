@@ -1,136 +1,88 @@
-# Exercice Phase 6 : Playbook Ansible pour déploiement
+# Exercice Phase 6 – Playbook `deploy.yml`
 
-## Exercice à réaliser
+## Objectif
 
-Créez un playbook Ansible pour déployer l'application sur les serveurs provisionnés.
+Écrire un playbook Ansible qui :
+- installe Docker s’il n’est pas présent ;
+- récupère l’image depuis votre registry ;
+- lance le conteneur de l’application et vérifie `/health`.
 
-## Correction complète
+## Étapes guidées
 
-```yaml
-# deploy.yml
----
-- name: Deploy application
-  hosts: app_servers
-  become: yes
-  vars:
-    app_name: example-api
-    app_port: 8000
-    docker_image: "registry.gitlab.com/group/project:latest"
-  
-  tasks:
-    - name: Ensure Docker is installed
-      package:
-        name: docker.io
-        state: present
-      when: ansible_os_family == "Debian"
-    
-    - name: Start Docker service
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
-    
-    - name: Create application directory
-      file:
-        path: /opt/{{ app_name }}
-        state: directory
-        mode: '0755'
-    
-    - name: Create docker-compose file
-      template:
-        src: docker-compose.yml.j2
-        dest: /opt/{{ app_name }}/docker-compose.yml
-        mode: '0644'
-    
-    - name: Login to Docker registry
-      docker_login:
-        registry: "{{ docker_registry }}"
-        username: "{{ docker_username }}"
-        password: "{{ docker_password }}"
-    
-    - name: Pull latest image
-      command: docker pull {{ docker_image }}
-    
-    - name: Stop and remove old container
-      docker_container:
-        name: "{{ app_name }}"
-        state: absent
-    
-    - name: Start application container
-      docker_container:
-        name: "{{ app_name }}"
-        image: "{{ docker_image }}"
-        state: started
-        restart_policy: unless-stopped
-        ports:
-          - "{{ app_port }}:8000"
-        env:
-          ENVIRONMENT: "{{ environment }}"
-    
-    - name: Wait for application to be ready
-      uri:
-        url: "http://localhost:{{ app_port }}/health"
-        method: GET
-        status_code: 200
-      register: result
-      until: result.status == 200
-      retries: 10
-      delay: 5
-    
-    - name: Verify deployment
-      uri:
-        url: "http://localhost:{{ app_port }}/"
-        method: GET
-      register: health_check
-    
-    - name: Display deployment status
-      debug:
-        msg: "Application deployed successfully at http://{{ ansible_host }}:{{ app_port }}"
-```
+1. **Inventaire minimal**
+   ```ini
+   [app_servers]
+   192.168.56.10 ansible_user=vagrant
+   ```
 
-## Explications détaillées
+2. **Playbook `playbooks/deploy.yml`**
+   ```yaml
+   ---
+   - name: Deploy FastAPI app
+     hosts: app_servers
+     become: true
+     vars:
+       app_name: example-api
+       app_port: 8000
+       docker_image: "registry.gitlab.com/group/project:latest"
+     tasks:
+       - name: Install Docker (Debian)
+         apt:
+           name: docker.io
+           state: present
+         when: ansible_os_family == "Debian"
 
-**hosts: app_servers** : Groupe de serveurs cibles
+       - name: Ensure Docker is running
+         systemd:
+           name: docker
+           state: started
+           enabled: true
 
-**vars** : Variables du playbook
+       - name: Pull application image
+         docker_image:
+           name: "{{ docker_image }}"
+           source: pull
 
-**package module** : Installe Docker
+       - name: Run application container
+         docker_container:
+           name: "{{ app_name }}"
+           image: "{{ docker_image }}"
+           restart_policy: unless-stopped
+           state: started
+           ports:
+             - "{{ app_port }}:8000"
 
-**template module** : Génère docker-compose.yml depuis un template
+       - name: Check health endpoint
+         uri:
+           url: "http://localhost:{{ app_port }}/health"
+           status_code: 200
+         register: health
+         retries: 5
+         delay: 5
+         until: health.status == 200
+   ```
 
-**docker_login** : Authentification au registry
+3. **Variables sensibles**
+   - Stockez `docker_username`, `docker_password` dans `group_vars/all/vault.yml` ou dans GitLab CI (et utilisez `docker_login` si besoin).
 
-**docker_container** : Gère les conteneurs
+4. **Commandes**
+   ```bash
+   ansible-playbook -i inventories/dev/hosts playbooks/deploy.yml
+   ```
 
-**uri module** : Vérifie que l'application répond
+## Vérifications attendues
 
-**retries/delay** : Réessaie jusqu'à ce que l'app soit prête
+- Le conteneur apparaît (`docker ps`).
+- L’endpoint `/health` répond 200.
+- Le playbook est rejouable sans erreur (idempotent).
 
-## Template docker-compose
+## Solution expliquée
 
-```yaml
-# templates/docker-compose.yml.j2
-version: '3.8'
-services:
-  app:
-    image: {{ docker_image }}
-    ports:
-      - "{{ app_port }}:8000"
-    environment:
-      ENVIRONMENT: {{ environment }}
-    restart: unless-stopped
-```
+Dans `corrections/`, vous trouverez un playbook plus complet utilisant des rôles (`docker`, `app`) et un template `docker-compose`. Comparez vos choix (modules, variables, checks).
 
-## Exécution
+## Pour aller plus loin
 
-```bash
-ansible-playbook -i inventory deploy.yml -e "environment=production"
-```
-
-## Vérification
-
-Vérifiez que :
-- L'application est déployée
-- Accessible sur le port configuré
-- Health check répond
+- Créer un rôle `roles/app` avec `tasks`, `templates`, `defaults`.
+- Gérer plusieurs environnements (`environment=staging` via `-e`).
+- Intégrer ce playbook dans le job `deploy_dev` du pipeline GitLab CI.*** End Patch
 

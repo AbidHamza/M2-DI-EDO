@@ -1,111 +1,84 @@
-# Exercice Phase 8 : Configuration Alertmanager
+# Exercice Phase 8 – Alertmanager + Routage des alertes
 
-## Exercice à réaliser
+## Objectif
 
-Configurez Alertmanager pour router les alertes vers email ou webhook.
+Créer un fichier `alertmanager.yml` qui :
+- route les alertes warning vers un email ;
+- route les alertes critical vers un webhook ;
+- applique un grouping cohérent pour éviter le spam.
 
-## Correction complète
+## Étapes guidées
 
-```yaml
-# alertmanager.yml
-global:
-  resolve_timeout: 5m
-  # Configuration SMTP pour email
-  smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'alerts@example.com'
-  smtp_auth_username: 'alerts@example.com'
-  smtp_auth_password: 'your-password'
+1. **Déployer Alertmanager localement**
+   ```bash
+   docker run -d --name alertmanager \
+     -p 9093:9093 \
+     -v $(pwd)/alertmanager.yml:/etc/alertmanager/alertmanager.yml \
+     prom/alertmanager
+   ```
 
-# Templates pour les notifications
-templates:
-  - '/etc/alertmanager/templates/*.tmpl'
+2. **Écrire `alertmanager.yml`**
+   ```yaml
+   global:
+     resolve_timeout: 5m
+     smtp_smarthost: 'smtp.gmail.com:587'
+     smtp_from: 'alerts@example.com'
+     smtp_auth_username: 'alerts@example.com'
+     smtp_auth_password: 'APP_PASSWORD'   # à protéger
 
-# Configuration du routage
-route:
-  # Route par défaut
-  receiver: 'default-receiver'
-  group_by: ['alertname', 'cluster', 'service']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 12h
-  
-  # Routes spécifiques
-  routes:
-    # Alertes critiques vers le webhook
-    - match:
-        severity: critical
-      receiver: 'webhook-receiver'
-      continue: true
-    
-    # Alertes warning vers email
-    - match:
-        severity: warning
-      receiver: 'email-receiver'
+   route:
+     receiver: default
+     group_by: ['alertname', 'environment', 'service']
+     group_wait: 10s
+     group_interval: 1m
+     repeat_interval: 12h
+     routes:
+       - match:
+           severity: critical
+         receiver: webhook
+       - match:
+           severity: warning
+         receiver: email
 
-# Récepteurs (destinations des alertes)
-receivers:
-  - name: 'default-receiver'
-    email_configs:
-      - to: 'admin@example.com'
-        subject: 'Alert: {{ .GroupLabels.alertname }}'
-        html: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+   receivers:
+     - name: default
+       email_configs:
+         - to: 'oncall@example.com'
+           send_resolved: true
 
-  - name: 'email-receiver'
-    email_configs:
-      - to: 'team@example.com'
-        subject: 'Warning: {{ .GroupLabels.alertname }}'
-        send_resolved: true
+     - name: email
+       email_configs:
+         - to: 'team@example.com'
+           subject: '[WARNING] {{ .GroupLabels.alertname }}'
 
-  - name: 'webhook-receiver'
-    webhook_configs:
-      - url: 'http://webhook-server:5000/alerts'
-        send_resolved: true
-```
+     - name: webhook
+       webhook_configs:
+         - url: 'http://localhost:5001/alerts'
+           send_resolved: true
+   ```
 
-## Explications détaillées
+3. **Adapter les alertes Prometheus**
+   - Ajoutez `labels: { severity: "warning" }` ou `"critical"` dans vos règles.
 
-**global** : Configuration globale (SMTP, timeouts)
+4. **Tester**
+   - Simulez une alerte en changeant un seuil ou en arrêtant l’application.
+   - Consultez http://localhost:9093 pour voir les alertes.
+   - Vérifiez la réception (email réel ou service webhook mocké).
 
-**route** : Configuration du routage des alertes
+## Vérifications attendues
 
-**group_by** : Regroupe les alertes similaires
+- Les alertes apparaissent dans Alertmanager.
+- Les emails/webhooks sont envoyés selon la sévérité.
+- Le grouping empêche l’envoi massif (une alerte par groupe).
 
-**group_wait** : Attend avant d'envoyer un groupe
+## Solution expliquée
 
-**receivers** : Destinations des alertes
+Accès dans `corrections/` (configuration commentée + template d’email). Consultez-la pour comprendre :
+- l’impact de `group_wait` et `repeat_interval` ;
+- la mise en forme des notifications (templates Go).
 
-**email_configs** : Configuration email
+## Conseils
 
-**webhook_configs** : Configuration webhook
-
-**match** : Conditions de routage
-
-## Template de notification (optionnel)
-
-```go
-// templates/email.tmpl
-{{ define "email.default.subject" }}
-[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.alertname }}
-{{ end }}
-
-{{ define "email.default.html" }}
-{{ range .Alerts }}
-Alert: {{ .Labels.alertname }}<br>
-Severity: {{ .Labels.severity }}<br>
-Description: {{ .Annotations.description }}<br>
-{{ end }}
-{{ end }}
-```
-
-## Vérification
-
-1. Déclenchez une alerte (simulez une erreur)
-2. Vérifiez qu'Alertmanager reçoit l'alerte
-3. Vérifiez que la notification est envoyée (email/webhook)
-
-## Problèmes courants
-
-- **Emails non reçus** : Vérifiez SMTP et credentials
-- **Webhook non appelé** : Vérifiez l'URL et la connectivité
-- **Alertes dupliquées** : Ajustez group_wait et group_interval
+- Utilisez un mot de passe d’application pour Gmail (ou un SMTP local).
+- Stockez les secrets dans `ansible-vault` avant de les versionner.
 

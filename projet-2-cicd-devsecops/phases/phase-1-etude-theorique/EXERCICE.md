@@ -1,41 +1,75 @@
-# Exercice Phase 1 : Premier pipeline GitLab CI
+# Exercice Phase 1 – Pipeline GitLab CI minimal
 
-## Exercice à réaliser
+## Objectif
 
-Créez un pipeline GitLab CI simple pour comprendre les concepts de base.
+Créer un fichier `.gitlab-ci.yml` avec deux stages (`lint`, `test`) pour comprendre le fonctionnement de base d’un pipeline.
 
-## Correction complète
+## Étapes guidées
 
-```yaml
-# .gitlab-ci.yml
-stages:
-  - build
-  - test
+1. **Créer le fichier `.gitlab-ci.yml`**
+   ```yaml
+   stages:
+     - lint
+     - test
+   ```
 
-build:
-  stage: build
-  script:
-    - echo "Building application..."
-    - docker build -t myapp:latest .
+2. **Ajouter un job `lint`**
+   ```yaml
+   lint:
+     stage: lint
+     image: python:3.11
+     script:
+       - pip install black==23.12.1
+       - black --check application-example
+   ```
 
-test:
-  stage: test
-  script:
-    - echo "Running tests..."
-    - npm test
-```
+3. **Ajouter un job `test`**
+   ```yaml
+   test:
+     stage: test
+     image: python:3.11
+     before_script:
+       - pip install -r application-example/requirements.txt
+     script:
+       - pytest application-example/tests
+     artifacts:
+       paths:
+         - junit.xml
+       when: always
+   ```
 
-## Explications détaillées
+4. **Déclarer une variable**
+   ```yaml
+   variables:
+     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+   ```
 
-**stages** : Définit l'ordre d'exécution des étapes
+5. **Activer le cache (optionnel)**
+   ```yaml
+   cache:
+     paths:
+       - .cache/pip
+   ```
 
-**build** : Job de build dans le stage build
+6. **Commit/push et vérifier**
+   - `git add .gitlab-ci.yml`
+   - `git commit -m "chore: add minimal pipeline"`
+   - `git push`
+   - Ouvrez l’onglet *CI/CD > Pipelines* dans GitLab pour suivre l’exécution.
 
-**script** : Commandes à exécuter
+## Vérifications attendues
 
-**test** : Job de test dans le stage test
+- Les deux jobs s’exécutent avec succès.
+- Les artifacts (rapport de tests) sont disponibles au besoin.
+- Les variables/caches apparaissent dans les logs.
 
-## Vérification
+## Solution expliquée
 
-Commitez et poussez le fichier, vérifiez que le pipeline s'exécute dans GitLab.
+Le dossier `corrections/` contient un pipeline commenté et quelques variantes (utilisation de matrices, runners Docker). Déchiffrez-le après vos essais pour comparer votre approche.
+
+## Pour aller plus loin
+
+- Ajouter un stage `build` qui créé une image Docker et la stocke comme artifact.
+- Définir des `rules` pour n’exécuter la pipeline que sur `merge_request` et `main`.
+- Tester `gitlab-runner exec docker lint` en local pour comprendre le fonctionnement des runners.*** End Patch
 

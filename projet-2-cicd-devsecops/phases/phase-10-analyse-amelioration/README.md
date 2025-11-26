@@ -1,41 +1,49 @@
-# Phase 10 : Analyse et amélioration
+# Phase 10 – Analyse, retours et amélioration continue
 
-## Objectif de la phase
+Dernière étape : analyser vos résultats, identifier les limites et proposer des axes d’amélioration réalistes. Ce rapport vaut 10 % de la note finale.
 
-Analyser les résultats et proposer des améliorations. Cette phase correspond à la Partie 4 du sujet d'examen (10 points).
+## Objectif concret
 
-## Tâches du projet
+- Mesurer la performance et la fiabilité de votre pipeline.
+- Documenter les incidents rencontrés et les solutions apportées.
+- Définir une roadmap d’améliorations (court, moyen, long terme).
 
-### Étape 1 : Évaluation des résultats
+## Plan d’action
 
-Évaluez :
-- Temps de déploiement
-- Fiabilité du pipeline
-- Qualité des rapports SonarQube
-- Sécurité de la chaîne
+1. **Collecter les métriques clés**
+   - Temps moyen d’exécution du pipeline (CI/CD > Analytics).
+   - Taux de réussite/échec.
+   - Couverture, dettes techniques (rapports SonarQube).
+   - Résultats des scans sécurité.
 
-### Étape 2 : Identification des limites
+2. **Analyser les points forts / faiblesses**
+   - Pipeline fiable ? (jobs instables, dépendance à un runner manuel…)
+   - Infrastructure : adaptée aux charges prévues ?
+   - Sécurité : secrets protégés, scans suffisants ?
 
-Identifiez :
-- Limitations de la solution
-- Points d'amélioration
-- Problèmes rencontrés
+3. **Proposer des améliorations**
+   - Techniques (Kubernetes, Helm, ArgoCD, autoscaling runners).
+   - Sécurité (GitLab Security dashboards, SAST/DAST supplémentaires).
+   - Processus (tests contractuels, notifications, monitoring).
+   - UX & documentation (runbooks, onboarding).
 
-### Étape 3 : Propositions d'amélioration
+4. **Planifier**
+   - Classer les actions par priorité (Quick wins, Mid-term, Long-term).
+   - Identifier les prérequis (budget, expertise, outils).
 
-Proposez :
-- Scalabilité (Kubernetes, ArgoCD)
-- Scans de sécurité avancés
-- Optimisations du pipeline
-- Intégrations supplémentaires
+## Livrables attendus
 
-## Livrable de la phase
+- Rapport d’analyse (Markdown ou slide deck) couvrant :
+  - métriques collectées ;
+  - incidents / limites ;
+  - propositions avec bénéfices attendus ;
+  - plan de mise en œuvre.
+- Tableau synthétique “Problème → Cause → Amélioration”.
 
-- [ ] Rapport d'analyse
-- [ ] Évaluation des résultats
-- [ ] Propositions d'amélioration documentées
+## Exercice associé
+
+Créez ce rapport à partir d’un modèle fourni dans `EXERCICE.md` (checklist + tableau). La **solution expliquée** dans `corrections/` fournit un exemple rempli.
 
 ## Projet terminé
 
-Félicitations ! Votre chaîne CI/CD DevSecOps est complète.
-
+Félicitations ! Votre chaîne CI/CD DevSecOps est opérationnelle et prête à évoluer.***

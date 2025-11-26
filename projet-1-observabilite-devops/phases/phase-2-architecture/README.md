@@ -1,83 +1,79 @@
-# Phase 2 : Conception de l'architecture
+# Phase 2 – Conception de l’architecture
 
-## Objectif de la phase
+Objectif : transformer la théorie de la phase 1 en une architecture claire montrant comment chaque composant sera déployé et comment les flux de données circuleront. Le livrable servira de plan pour les phases IaC (Terraform/Ansible) et pour la soutenance (20 % de la note).
 
-Concevoir l'architecture complète de la solution d'observabilité en intégrant tous les composants. Cette phase correspond à la Partie 2 du sujet d'examen (20 points).
+## Ce que vous devez produire
 
-## Rappels techniques essentiels
+1. **Schéma fonctionnel** : vues d’ensemble des composants (application exemple, Prometheus, Loki, Grafana, Alertmanager, exporters, Promtail, etc.) et de leurs interactions.
+2. **Schéma de déploiement** : représentation de l’infrastructure (machines, réseaux, conteneurs, ports, stockage) + emplacement des outils IaC.
+3. **Description textuelle des flux** : métriques, logs, alertes, dashboards, pipelines IaC.
+4. **Cas d’usage détaillé** : quels indicateurs doivent être suivis, quels logs sont critiques, quelles alertes seront déclenchées.
 
-### Architecture distribuée
+## Méthodologie proposée
 
-Une solution d'observabilité moderne est distribuée :
-- Composants séparés et spécialisés
-- Communication via APIs
-- Scalabilité horizontale
-- Haute disponibilité
+### 1. Partir des usages
 
-### Flux de données
+- Identifiez les besoins métier : disponibilité de l’API Flask, latence, erreurs HTTP, volume de logs, alertes incident.
+- Listez les questions auxquelles la plateforme doit répondre (ex : « Qui sera alerté si /metrics n’est plus accessible ? »).
 
-**Collecte de métriques :**
-1. Application expose des métriques (exporters)
-2. Prometheus scrape les métriques
-3. Prometheus stocke les métriques
-4. Grafana interroge Prometheus
+### 2. Définir les composants
 
-**Ingestion de logs :**
-1. Application génère des logs
-2. Promtail collecte les logs
-3. Loki ingère et indexe les logs
-4. Grafana interroge Loki
+Pour chaque brique :
+- **Application** : conteneur principal, endpoints, port 5000, export `/metrics`.
+- **Prometheus** : collecte métriques, règle d’alerte, exposition sur 9090.
+- **Exporters / service discovery** : configuration statique ou dynamique selon l’environnement.
+- **Loki + Promtail** : chemin des logs, labels utilisés, règles de rétention.
+- **Grafana** : datasources (Prometheus + Loki), dossiers de dashboards, variables communes.
+- **Alertmanager** : routes, récepteurs, règles de groupement.
+- **IaC** : Terraform pour créer les VM / réseaux / buckets, Ansible pour installer et paramétrer les services.
 
-**Alertes :**
-1. Prometheus évalue les règles d'alerte
-2. Alertes envoyées à Alertmanager
-3. Alertmanager route les alertes
-4. Notifications (email, webhook)
+Présentez les dépendances (ex : Grafana dépend de Prometheus pour les métriques).
 
-## Tâches du projet
+### 3. Cartographier les flux
 
-### Étape 1 : Schéma d'architecture global
+Réalisez un tableau (ou section) avec :
 
-Créez un schéma montrant :
-- Tous les composants (Prometheus, Grafana, Loki, Alertmanager)
-- Les flux de données
-- Les interactions entre composants
-- L'infrastructure (serveurs, conteneurs)
+| Flux | Source | Traitement | Destination | Notes |
+| ---- | ------ | ---------- | ----------- | ----- |
+| Métriques | Flask exporter | Scrape Prometheus toutes les 15 s | Prometheus TSDB | Labels app/service |
+| Logs | Fichiers stdout / fichiers applicatifs | Promtail + labels custom | Loki | Conserver 7 jours |
+| Alertes | Prometheus rules | Evaluation → Alertmanager | Email/Webhook | Critères CPU > 80 % etc. |
+| Dashboards | Datasources Prometheus/Loki | Panels Grafana | Vue SRE | Variables environnements |
 
-### Étape 2 : Schéma de déploiement
+### 4. Définir l’architecture physique/logique
 
-Créez un schéma montrant :
-- Architecture de déploiement
-- Intégration Terraform (provisionnement)
-- Intégration Ansible (configuration)
-- Environnements (dev, prod)
+- Choisissez le style : tout sur une VM, plusieurs VMs, cluster Docker, etc. (même si vous restez en local, justifiez).
+- Identifiez les ports, volumes, réseaux Docker, secrets nécessaires.
+- Déterminez où s’exécuteront Terraform et Ansible (local, runner CI, etc.).
 
-### Étape 3 : Description des flux
+### 5. Préparer l’intégration IaC
 
-Documentez :
-- Flux de collecte de métriques
-- Flux d'ingestion de logs
-- Flux d'alertes
-- Flux de visualisation
+- Listez les ressources Terraform à créer (ex : réseau, VM monitoring, stockage S3/MinIO).
+- Listez les rôles Ansible envisagés (docker, prom, grafana, loki, alertmanager, app).
+- Expliquez comment les variables seront partagées (fichiers `tfvars`, inventaire Ansible, variables d’environnement).
 
-### Étape 4 : Cas pratique
+### 6. Livrables détaillés
 
-Décrivez :
-- Application à superviser (fournie ou développée)
-- Métriques à collecter
-- Logs à ingérer
-- Dashboards nécessaires
-- Alertes à configurer
+- [ ] Schéma fonctionnel (image ou diagramme fait avec draw.io, Excalidraw, etc.)
+- [ ] Schéma de déploiement + légende
+- [ ] Document texte (peut être ce README ou un fichier `ARCHITECTURE.md`) décrivant :
+  - les flux (tableau ci-dessus),
+  - les ressources IaC prévues,
+  - les hypothèses (local, cloud gratuit, contraintes réseau).
+- [ ] Liste des dashboards/alertes prioritaires.
 
-## Livrable de la phase
+## Conseils
 
-- [ ] Schéma d'architecture complet
-- [ ] Schéma de déploiement
-- [ ] Description des flux de données
-- [ ] Description du cas pratique
-- [ ] Diagrammes UML si nécessaire
+- Restez pragmatique : un schéma lisible vaut mieux qu’un diagramme UML complexe.
+- Mentionnez les limites (ex : « Single node, donc HA limitée ») et les pistes d’évolution.
+- Utilisez des couleurs ou numéros pour distinguer métriques/logs/alertes.
+- Vérifiez que chaque composant décrit en phase 1 apparaît ici avec son rôle précis.
 
-## Prochaine phase
+## Passage à la phase 3
 
-Passez à la **Phase 3 : Provisionnement avec Terraform**.
+Quand votre architecture est validée :
+1. Enregistrez les schémas dans `docs/` (ou un sous-dossier dédié).
+2. Ajoutez les flux décrits dans un fichier versionné.
+3. Commitez vos fichiers (schéma exporté + documentation).
+4. Ouvrez `phase-3-terraform/README.md` pour commencer le provisionnement à partir de ce plan.
 

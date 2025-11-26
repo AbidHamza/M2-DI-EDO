@@ -1,96 +1,70 @@
-# Exercice Phase 4 : Premier playbook Ansible
+# Exercice Phase 4 – Déployer Prometheus avec Ansible
 
-## Exercice à réaliser
+## Objectif
 
-Créez un playbook Ansible pour installer Docker et déployer Prometheus.
+Écrire un playbook unique qui :
+1. Installe Docker (sur une VM Debian/Ubuntu ou une machine locale via SSH).
+2. Copie un fichier de configuration `prometheus.yml`.
+3. Lance un conteneur Prometheus prêt à être scrappé.
 
-## Correction complète
+## Pré-requis
 
-```yaml
-# playbook.yml
----
-- name: Install Docker and deploy Prometheus
-  hosts: all
-  become: yes
-  tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-      when: ansible_os_family == "Debian"
-    
-    - name: Install Docker
-      apt:
-        name:
-          - docker.io
-          - docker-compose
-        state: present
-      when: ansible_os_family == "Debian"
-    
-    - name: Start Docker service
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
-    
-    - name: Create directory for Prometheus config
-      file:
-        path: /opt/prometheus
-        state: directory
-        mode: '0755'
-    
-    - name: Copy Prometheus configuration
-      copy:
-        src: prometheus.yml
-        dest: /opt/prometheus/prometheus.yml
-        mode: '0644'
-    
-    - name: Deploy Prometheus container
-      docker_container:
-        name: prometheus
-        image: prom/prometheus:latest
-        state: started
-        restart_policy: unless-stopped
-        ports:
-          - "9090:9090"
-        volumes:
-          - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-          - prometheus-data:/prometheus
-```
+- Machine cible accessible en SSH (`ansible_host`, utilisateur, clé).
+- Ansible installé sur votre poste (`ansible --version`).
+- Fichier `prometheus.yml` de test (vous pouvez reprendre celui de l’application exemple).
 
-## Explications détaillées
+## Étapes guidées
 
-**hosts: all** : Exécute sur tous les hosts de l'inventory
+1. **Préparer l’inventaire**
+   ```ini
+   [observability]
+   node1 ansible_host=192.168.56.10 ansible_user=vagrant
+   ```
+   - Ajoutez `ansible_ssh_private_key_file` si nécessaire.
 
-**become: yes** : Exécute avec les privilèges root
+2. **Créer le playbook `deploy-prometheus.yml`**
+   - Structure conseillée :
+     ```yaml
+     ---
+     - name: Install Docker and run Prometheus
+       hosts: observability
+       become: true
+       vars:
+         prometheus_config_dir: /opt/prometheus
+     ```
 
-**apt module** : Installe des paquets sur Debian/Ubuntu
+3. **Ajouter les tâches essentielles**
+   - Mise à jour du cache `apt` (module `apt`).
+   - Installation de `docker.io` et `docker-compose` (ou paquets équivalents).
+   - Démarrage/activation du service Docker (`systemd`).
+   - Création du répertoire `/opt/prometheus` (`file`).
+   - Copie du fichier `prometheus.yml` (`copy` ou `template`).
+   - Déploiement du conteneur (`docker_container`) avec :
+     - image `prom/prometheus:latest`
+     - port `9090:9090`
+     - montage du fichier de configuration et d’un volume nommé `prometheus-data`.
 
-**systemd module** : Gère les services systemd
+4. **Lancer le playbook**
+   ```bash
+   ansible-playbook -i inventory deploy-prometheus.yml
+   ```
 
-**file module** : Gère les fichiers et dossiers
+5. **Rendre le playbook idempotent**
+   - Relancez la commande pour vérifier que toutes les tâches passent en `ok`.
 
-**copy module** : Copie des fichiers
+## Vérifications
 
-**docker_container module** : Gère les conteneurs Docker
+- `docker ps` montre le conteneur `prometheus`.
+- Le dossier `/opt/prometheus` contient la configuration.
+- http://node1:9090 est accessible depuis votre poste.
 
-## Inventory
+## Solution expliquée
 
-```ini
-# inventory
-[servers]
-server1 ansible_host=192.168.1.100
-```
+Le dossier `corrections/` contient une solution détaillée (playbook + explications). Déchiffrez-la après avoir essayé, afin de comparer votre approche (utilisation des rôles, variables, handlers…).
 
-## Exécution
+## Variantes proposées
 
-```bash
-ansible-playbook -i inventory playbook.yml
-```
-
-## Vérification
-
-Vérifiez que :
-- Docker est installé
-- Prometheus est déployé
-- Accessible sur http://server1:9090
+- Transformer ce playbook en rôle `roles/prometheus`.
+- Ajouter un handler pour redémarrer le conteneur lorsque la configuration change.
+- Utiliser `ansible-vault` pour stocker les mots de passe nécessaires à Docker Registry si vous poussez des images privées.
 

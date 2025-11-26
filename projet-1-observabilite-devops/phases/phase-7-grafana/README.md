@@ -1,42 +1,58 @@
-# Phase 7 : Création de dashboards Grafana
+# Phase 7 – Dashboards et visualisations Grafana
 
-## Objectif de la phase
+Cette phase valorise les métriques/logs collectés. Vous devez livrer des dashboards actionnables démontrant l’état de l’application et de l’infrastructure.
 
-Créer des dashboards Grafana pertinents pour visualiser les métriques et logs. Cette phase fait partie de la Partie 3 du sujet d'examen (40 points).
+## Objectif concret
 
-## Tâches du projet
+- Configurer les datasources (Prometheus + Loki).
+- Créer au moins deux dashboards personnalisés (système, applicatif, logs).
+- Documenter chaque panel (requête, seuils, usage).
 
-### Étape 1 : Configuration des datasources
+## Plan d’action
 
-Configurez :
-- Prometheus comme datasource
-- Loki comme datasource
+1. **Brancher les datasources**
+   - Datasource Prometheus : URL `http://prometheus:9090`.
+   - Datasource Loki : URL `http://loki:3100`.
+   - Configurez l’authentification si nécessaire (basic auth, token).
 
-### Étape 2 : Dashboard 1 - Métriques système
+2. **Créer un dashboard “Infrastructure”**
+   - Panels proposés : CPU, mémoire, disque, réseau, disponibilité des services (`up`).
+   - Ajoutez des seuils (warning/critical) pour rendre les panels exploitables.
 
-Créez un dashboard avec :
-- CPU, mémoire, disque
-- Métriques réseau
-- Panels graphiques
+3. **Créer un dashboard “Application”**
+   - Panels : taux de requêtes, latence p95, taux d’erreur, statut des dépendances.
+   - Ajoutez des variables (ex: environnement, service) pour filtrer rapidement.
 
-### Étape 3 : Dashboard 2 - Métriques applicatives
+4. **Ajouter un panel Logs**
+   - Panel “Logs” ou “Logs search” pointant sur Loki.
+   - Requêtes LogQL préconfigurées (`{service="example-app"}` ou `|= "error"`).
 
-Créez un dashboard avec :
-- Latence des requêtes
-- Taux d'erreur
-- Débit
+5. **Documenter chaque dashboard**
+   - Description du besoin métier couvert.
+   - Liste des panels + requêtes PromQL/LogQL dans un fichier `docs/dashboards.md` ou dans les annotations du dashboard.
 
-### Étape 4 : Dashboard 3 - Logs (optionnel)
+6. **Exporter et versionner**
+   - Export JSON des dashboards (`dashboards/system.json`, `dashboards/application.json`).
+   - Optionnel : automatiser l’import via Ansible ou Grafana provisioning.
 
-Créez un dashboard pour visualiser les logs.
+## Livrables attendus
 
-## Livrable de la phase
+- Au moins deux dashboards (.json) importables.
+- Captures d’écran avec exemples de données réelles.
+- Documentation expliquant comment réutiliser/adapter les dashboards.
+- Panel logs fonctionnel (optionnel mais fortement conseillé).
 
-- [ ] Au minimum 2 dashboards personnalisés
-- [ ] Dashboards pertinents et utiles
-- [ ] Documentation des dashboards
+## Exercice associé
 
-## Prochaine phase
+`EXERCICE.md` propose un pas-à-pas pour créer deux dashboards (système et application) avec panels clés. Inspirez-vous-en pour structurer vos versions finales. Une **solution expliquée** est disponible dans `corrections/`.
 
-Passez à la **Phase 8 : Configuration d'Alertmanager**.
+## Checklist
+
+- [ ] Datasources Prometheus et Loki configurées.
+- [ ] ≥ 2 dashboards avec panels pertinents.
+- [ ] Variables et légendes pour naviguer facilement.
+- [ ] Exports JSON versionnés.
+- [ ] Documentation sur l’utilisation des dashboards.
+
+Une fois cette phase validée, vous serez prêts pour la **Phase 8 – Alertmanager** afin de traduire vos règles d’alertes en notifications actionnables.
 

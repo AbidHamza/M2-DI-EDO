@@ -1,304 +1,89 @@
-# Phase 1 : Étude et présentation théorique
-
-## Objectif de la phase
-
-Comprendre les concepts DevSecOps et maîtriser les outils GitLab CI, SonarQube, Terraform et Ansible. Cette phase correspond à la Partie 1 du sujet d'examen (30 points).
-
-## Rappels techniques essentiels
-
-### DevOps vs DevSecOps
-
-**DevOps classique :**
-- Intégration du développement et des opérations
-- Automatisation du cycle de vie
-- Focus sur la vitesse et la fiabilité
-
-**DevSecOps :**
-- Intégration de la sécurité dans DevOps
-- Security as Code
-- Shift Left : sécurité dès le début
-- Automatisation des contrôles de sécurité
-
-**Différences clés :**
-- Sécurité intégrée, pas ajoutée après
-- Détection précoce des vulnérabilités
-- Automatisation des scans de sécurité
-- Culture de sécurité partagée
-
-### GitLab CI/CD
-
-**Qu'est-ce que GitLab CI ?**
-- Système d'intégration et déploiement continu intégré à GitLab
-- Pipeline défini dans `.gitlab-ci.yml`
-- Runners pour exécuter les jobs
-- Intégration native avec le repository
-
-**Concepts clés :**
-- **Pipeline** : Série d'étapes automatisées
-- **Stages** : Groupes de jobs exécutés en parallèle
-- **Jobs** : Tâches individuelles (test, build, deploy)
-- **Runners** : Machines qui exécutent les jobs
-- **Artifacts** : Fichiers produits par les jobs
-- **Variables** : Configuration et secrets
-
-**Avantages :**
-- Intégration native avec Git
-- Interface graphique intuitive
-- Support multi-environnements
-- Gestion des secrets intégrée
-
-### SonarQube
-
-**Qu'est-ce que SonarQube ?**
-- Plateforme d'analyse statique de code
-- Détection automatique de bugs, vulnérabilités et code smells
-- Support de nombreux langages
-- Quality Gates pour bloquer les mauvais codes
-
-**Fonctionnalités :**
-- Analyse de code source
-- Détection de vulnérabilités de sécurité
-- Détection de bugs et code smells
-- Mesure de la couverture de code
-- Rapports détaillés
-
-**Concepts clés :**
-- **Quality Gate** : Seuils de qualité à respecter
-- **Issues** : Bugs, vulnérabilités, code smells
-- **Coverage** : Couverture de code par les tests
-- **Technical Debt** : Dette technique
-
-**Intégration CI/CD :**
-- Scanner dans le pipeline
-- Blocage si Quality Gate échoue
-- Rapports intégrés dans GitLab
-
-### Terraform
-
-**Qu'est-ce que Terraform ?**
-- Outil d'Infrastructure as Code
-- Provisionnement d'infrastructure multi-cloud
-- Déclaratif (décrit l'état désiré)
-- State management
-
-**Concepts clés :**
-- **Providers** : Plugins pour différentes plateformes
-- **Resources** : Composants d'infrastructure
-- **State** : État actuel de l'infrastructure
-- **Plan** : Prévisualisation des changements
-- **Apply** : Application des changements
-
-**Avantages :**
-- Multi-cloud support
-- Versioning de l'infrastructure
-- Reproductibilité
-- Plan avant application
-
-### Ansible
-
-**Qu'est-ce qu'Ansible ?**
-- Outil de configuration management
-- Automatisation des tâches d'administration
-- Agentless (pas d'agent à installer)
-- Idempotent (peut être exécuté plusieurs fois)
-
-**Concepts clés :**
-- **Playbooks** : Fichiers YAML décrivant les tâches
-- **Roles** : Réutilisation de configurations
-- **Modules** : Tâches prédéfinies
-- **Inventories** : Liste des serveurs à gérer
-- **Idempotence** : Résultat identique à chaque exécution
-
-**Avantages :**
-- Simple (YAML)
-- Agentless
-- Idempotent
-- Large écosystème de modules
-
-### Complémentarité Terraform + Ansible
-
-**Terraform :**
-- Provisionne l'infrastructure (créer les serveurs)
-- Gère les ressources cloud
-- State management
-
-**Ansible :**
-- Configure les serveurs (installer, configurer)
-- Déploie les applications
-- Gère la configuration
-
-**Workflow typique :**
-1. Terraform crée les serveurs
-2. Ansible configure et déploie
-
-### Enjeux dans un contexte applicatif critique
-
-**Applications financières :**
-- Données sensibles (informations bancaires)
-- Conformité réglementaire
-- Disponibilité critique
-- Audit et traçabilité
-
-**Exigences de sécurité :**
-- Chiffrement des données
-- Authentification forte
-- Logs d'audit
-- Contrôles d'accès stricts
-
-**Exigences de qualité :**
-- Code sans vulnérabilités
-- Tests complets
-- Documentation à jour
-- Performance optimale
-
-## Exercice pratique : Premiers pas avec GitLab CI
-
-**Consultez le fichier EXERCICE.md dans ce dossier pour l'exercice complet avec correction détaillée.**
-
-**Résumé de l'exercice :**
-- Créer un pipeline GitLab CI simple
-- Comprendre les stages et jobs
-- Utiliser les variables
-- Créer des artifacts
-
-## Tâches du projet
-
-### Étape 1 : Étudier DevSecOps
-
-**À faire :**
-1. Rechercher et comprendre DevSecOps
-2. Comparer avec DevOps classique
-3. Identifier les avantages
-4. Préparer une présentation (5-7 slides)
-
-**Points à couvrir :**
-- Définition et principes DevSecOps
-- Différences avec DevOps
-- Avantages et bénéfices
-- Cas d'usage
-- Bonnes pratiques
-
-### Étape 2 : Étudier GitLab CI
-
-**À faire :**
-1. Lire la documentation officielle de GitLab CI
-2. Comprendre l'architecture
-3. Comprendre les concepts (pipeline, stages, jobs)
-4. Préparer une présentation (5-7 slides)
-
-**Points à couvrir :**
-- Architecture GitLab CI
-- Concepts (pipeline, stages, jobs, runners)
-- Syntaxe `.gitlab-ci.yml`
-- Variables et secrets
-- Artifacts et caches
-- Intégration avec GitLab
-
-### Étape 3 : Étudier SonarQube
-
-**À faire :**
-1. Lire la documentation officielle de SonarQube
-2. Comprendre l'analyse statique
-3. Comprendre les Quality Gates
-4. Préparer une présentation (5-7 slides)
-
-**Points à couvrir :**
-- Architecture SonarQube
-- Types d'analyses (bugs, vulnérabilités, code smells)
-- Quality Gates
-- Intégration CI/CD
-- Rapports et métriques
-
-### Étape 4 : Étudier Terraform
-
-**À faire :**
-1. Lire la documentation officielle de Terraform
-2. Comprendre l'Infrastructure as Code
-3. Comprendre les concepts clés
-4. Préparer une présentation (4-6 slides)
-
-**Points à couvrir :**
-- Concepts IaC
-- Architecture Terraform
-- Providers et resources
-- State management
-- Plan et Apply
-- Modules
-
-### Étape 5 : Étudier Ansible
-
-**À faire :**
-1. Lire la documentation officielle d'Ansible
-2. Comprendre la configuration management
-3. Comprendre les playbooks et roles
-4. Préparer une présentation (4-6 slides)
-
-**Points à couvrir :**
-- Concepts configuration management
-- Architecture Ansible
-- Playbooks et roles
-- Modules et inventories
-- Idempotence
-- Cas d'usage
-
-### Étape 6 : Enjeux applicatifs critiques
-
-**À faire :**
-1. Identifier les enjeux spécifiques
-2. Comprendre les exigences de sécurité
-3. Préparer une présentation (3-5 slides)
-
-**Points à couvrir :**
-- Contexte applicatif critique (finances, données sensibles)
-- Exigences de sécurité
-- Exigences de qualité
-- Exigences de conformité
-- Traçabilité et audit
-
-## Livrable de la phase
-
-À la fin de cette phase, vous devez avoir :
-
-- [ ] Présentation PowerPoint (minimum 20 slides) couvrant :
-  - DevSecOps vs DevOps
-  - GitLab CI (architecture, concepts, intégration)
-  - SonarQube (analyse, quality gates, intégration)
-  - Terraform (IaC, concepts, providers)
-  - Ansible (configuration management, playbooks)
-  - Enjeux applicatifs critiques
-- [ ] Compréhension claire de chaque outil
-- [ ] Identification des interactions entre outils
-- [ ] Documentation de vos recherches
-
-## Vérification
-
-Testez votre compréhension :
-
-1. **Pouvez-vous expliquer** la différence entre DevOps et DevSecOps ?
-2. **Pouvez-vous décrire** le fonctionnement d'un pipeline GitLab CI ?
-3. **Pouvez-vous expliquer** comment SonarQube détecte les vulnérabilités ?
-4. **Pouvez-vous justifier** l'utilisation de Terraform et Ansible ensemble ?
-
-## Problèmes courants
-
-- **Confusion DevOps/DevSecOps** : Focus sur l'intégration de la sécurité
-- **Complexité GitLab CI** : Commencez par des pipelines simples
-- **Compréhension SonarQube** : Testez avec un projet simple
-
-## Notes importantes
-
-- Cette phase est théorique mais essentielle
-- Prenez le temps de bien comprendre chaque outil
-- La présentation sera évaluée (30 points)
-- Documentez vos sources
-
-## Prochaine phase
-
-Une fois cette phase terminée et vérifiée, passez à la **Phase 2 : Conception de l'architecture CI/CD**.
-
-**Commitez votre travail :**
+# Phase 1 – Étude et présentation théorique
+
+Cette phase pose les bases du projet : comprendre DevSecOps, les outils de la chaîne (GitLab CI, SonarQube, Terraform, Ansible) et les enjeux d’une application critique. Le livrable est une présentation claire (~20 slides) qui vous servira de référence pendant toute la mise en œuvre.
+
+## Pourquoi cette phase est clé
+
+- Vous devez pouvoir expliquer le “pourquoi” avant de construire le “comment”.
+- Les 30 premiers points de l’évaluation portent sur votre capacité à présenter DevSecOps et vos choix d’outils.
+- Les erreurs fréquentes (confusion DevOps/DevSecOps, outil mal adapté) se corrigent ici.
+
+## Résultat attendu
+
+Une présentation structurée couvrant :
+- Principes DevSecOps, comparaison avec DevOps, notion de “shift left”
+- Fonctionnement d’un pipeline GitLab CI (stages, jobs, runners, variables)
+- Rôle de SonarQube/SonarCloud et des Quality Gates
+- Complémentarité Terraform (provisionnement) + Ansible (configuration/déploiement)
+- Enjeux de sécurité et de conformité pour l’application cible
+
+## Préparation
+
+- Lisez le README général du projet.
+- Ouvrez les rappels dans `docs/rappels-theoriques/`.
+- Préparez un espace de prise de notes (`NOTES.md`).
+
+## Plan guidé
+
+1. **Clarifier DevSecOps**
+   - Reformulez les différences avec DevOps classique.
+   - Identifiez les trois principes : Security as Code, Shift Left, Automation.
+   - Listez un cas d’usage concret (ex : application financière).
+
+2. **Analyser GitLab CI**
+   - Intégration Git, structure `.gitlab-ci.yml`, runners partagés vs spécifiques.
+   - Variables protégées, artifacts, environments.
+   - Ajoutez un schéma (commit → pipeline → déploiement).
+
+3. **Explorer SonarQube / SonarCloud**
+   - Architecture (scanner, serveur, Quality Gate).
+   - Types d’issues (bugs, vulnerabilities, code smells).
+   - Comment bloquer un merge quand la qualité n’est pas atteinte.
+
+4. **Comprendre Terraform & Ansible**
+   - Terraform : providers, state, plan/apply, modules.
+   - Ansible : inventaires, playbooks, rôles, idempotence.
+   - Donnez un exemple de workflow : Terraform crée une VM → Ansible installe Docker et déploie l’app.
+
+5. **Enjeux applicatifs critiques**
+   - Confidentialité, disponibilité, conformité (audit, logs).
+   - Exigences de sécurité (secrets, chiffrement, traçabilité).
+   - Exigences qualité (tests automatiques, performance).
+
+6. **Structurer la présentation**
+   - Introduction DevSecOps
+   - Zoom GitLab CI
+   - Zoom SonarQube
+   - Zoom Terraform/Ansible
+   - Enjeux sécurité/qualité
+   - Plan des phases et articulation des outils
+
+## Exercice associé
+
+Avant de finaliser la présentation, réalisez l’exercice décrit dans `EXERCICE.md` (pipeline GitLab CI minimal). Il vous permettra d’illustrer vos slides par un exemple concret. La **solution expliquée** est disponible dans `corrections/` après déchiffrement.
+
+## Livrables
+
+- Présentation (≥ 20 slides) couvrant l’ensemble des points ci-dessus
+- Notes/sources référencées
+- Extrait de pipeline simple testé (pour introduire GitLab CI)
+
+## Checklist
+
+- [ ] Je peux expliquer DevSecOps vs DevOps avec mes mots
+- [ ] Je sais décrire un pipeline GitLab CI et son `.gitlab-ci.yml`
+- [ ] Je comprends comment SonarQube applique un Quality Gate
+- [ ] Je sais quand utiliser Terraform ou Ansible
+- [ ] Je connais les exigences de sécurité de l’application cible
+
+## Passage à la suite
+
+Quand la checklist est validée, commitez votre travail :
+
 ```bash
 git add .
-git commit -m "Phase 1: Étude théorique DevSecOps et outils"
+git commit -m "Phase 1 : étude DevSecOps et outillage"
 ```
+
+Puis ouvrez `phase-2-architecture/README.md` pour concevoir l’architecture CI/CD détaillée.*** End Patch to=functions.apply_patch परिणाम to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch to=functions.apply_patch;
 

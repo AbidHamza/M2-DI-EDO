@@ -1,127 +1,62 @@
-# Exercice Phase 3 : Pipeline GitLab CI complet
+# Exercice Phase 3 – Pipeline à 4 stages
 
-## Exercice à réaliser
+## Objectif
 
-Créez un pipeline GitLab CI complet avec les étapes : test, build, quality, deploy.
+Écrire un `.gitlab-ci.yml` composé des stages suivants :
+1. `lint`
+2. `test`
+3. `quality`
+4. `deploy`
 
-## Correction complète
+Chaque stage doit contenir au moins un job avec une image adaptée et un minimum de configuration.
 
-```yaml
-# .gitlab-ci.yml
-stages:
-  - test
-  - quality
-  - build
-  - deploy
+## Étapes guidées
 
-variables:
-  DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  PYTHON_VERSION: "3.11"
+1. **Déclarer les stages**
+   ```yaml
+   stages:
+     - lint
+     - test
+     - quality
+     - deploy
+   ```
 
-# Stage: Test
-test:
-  stage: test
-  image: python:${PYTHON_VERSION}
-  before_script:
-    - pip install -r requirements.txt
-  script:
-    - pytest tests/ --cov=. --cov-report=xml
-  coverage: '/TOTAL.*\s+(\d+%)$/'
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: coverage.xml
-    paths:
-      - coverage.xml
-    expire_in: 1 week
+2. **Job `lint`**
+   - Image Python ou Node selon le projet.
+   - Installation des dépendances nécessaires.
+   - Exécution d’un linter (`black`, `flake8`, `eslint`…).
 
-# Stage: Quality
-sonarqube:
-  stage: quality
-  image: sonarsource/sonar-scanner-cli:latest
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - .sonar/cache
-  script:
-    - sonar-scanner
-      -Dsonar.projectKey=${CI_PROJECT_NAME}
-      -Dsonar.sources=.
-      -Dsonar.host.url=${SONARQUBE_URL}
-      -Dsonar.login=${SONARQUBE_TOKEN}
-  allow_failure: false
+3. **Job `test`**
+   - Même image que `lint` ou une image dédiée.
+   - Installation des dépendances via `requirements.txt`.
+   - Exécution des tests avec génération d’un rapport (junit/cobertura) stocké en artifact.
 
-# Stage: Build
-build:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker build -t $DOCKER_IMAGE .
-    - docker push $DOCKER_IMAGE
-  only:
-    - main
-    - develop
+4. **Job `quality`**
+   - Utilisez `sonarsource/sonar-scanner-cli`.
+   - Variables `SONARQUBE_URL` et `SONARQUBE_TOKEN` à placer dans GitLab > Settings > CI/CD > Variables.
+   - Ajoutez un cache `.sonar/cache`.
 
-# Stage: Deploy
-deploy_dev:
-  stage: deploy
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-  script:
-    - ssh -o StrictHostKeyChecking=no user@dev-server "cd /app && docker-compose pull && docker-compose up -d"
-  environment:
-    name: development
-    url: http://dev-server:8000
-  only:
-    - develop
+5. **Job `deploy`**
+   - Job basique qui simule un déploiement (ex : `echo "Deploy step"`).
+   - Conditionnez-le (ex : `only: ["main"]`) et marquez-le manuel si nécessaire (`when: manual`).
 
-deploy_prod:
-  stage: deploy
-  image: alpine:latest
-  script:
-    - echo "Deploy to production"
-  environment:
-    name: production
-    url: http://prod-server:8000
-  when: manual
-  only:
-    - main
-```
+6. **Tester dans GitLab**
+   - Commitez le fichier, poussez et vérifiez que la pipeline passe toutes les étapes.
 
-## Explications détaillées
+## Vérification attendue
 
-**stages** : Définit l'ordre d'exécution
+- Les 4 stages apparaissent dans GitLab.
+- Les reports de tests sont disponibles en artifacts.
+- Le job SonarQube se connecte et bloque en cas d’échec.
+- Le job `deploy` respecte les conditions (`manual` ou `only`).
 
-**variables** : Variables globales du pipeline
+## Solution expliquée
 
-**test stage** : Exécute les tests avec couverture
+Le dossier `corrections/` contient un `.gitlab-ci.yml` complet avec commentaires. Déchiffrez-le après votre tentative pour comparer vos choix (images, caches, variables, rules).
 
-**sonarqube stage** : Analyse le code avec SonarQube
+## Pour aller plus loin
 
-**build stage** : Construit l'image Docker
-
-**deploy stages** : Déploie selon l'environnement
-
-**artifacts** : Fichiers produits par les jobs
-
-**only/when** : Conditions d'exécution
-
-## Vérification
-
-Vérifiez que :
-- Le pipeline s'exécute correctement
-- Toutes les étapes passent
-- L'application est déployée
+- Ajouter un stage `scan` (Trivy, Snyk) entre `build` et `deploy`.
+- Déclencher Terraform/Ansible dans `deploy`.
+- Utiliser `rules` pour limiter la pipeline aux merge requests ou aux tags.*** End Patch
 

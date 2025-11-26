@@ -1,270 +1,99 @@
-# Phase 1 : Étude et présentation théorique
+# Phase 1 – Étude et présentation théorique
 
-## Objectif de la phase
+Cette phase lance le projet en posant toutes les bases théoriques. Vous devez être capable d’expliquer clairement l’observabilité moderne, les outils utilisés dans la suite du projet et la logique Infrastructure as Code. Les notions clarifiées ici seront réutilisées dans chaque phase pratique.
 
-Comprendre les concepts fondamentaux de l'observabilité moderne et maîtriser les outils Prometheus, Grafana, Loki et Alertmanager. Cette phase correspond à la Partie 1 du sujet d'examen (30 points).
+## Pourquoi cette phase est cruciale
 
-## Rappels techniques essentiels
+- Sans vision globale, les choix d’architecture des phases 2 et 3 seront flous.
+- Les explications théoriques constituent 30 % de l’évaluation finale.
+- Les erreurs les plus courantes (confusion métriques/logs, Prometheus vs Grafana, Terraform vs Ansible) se corrigent dès maintenant.
 
-### Observabilité vs Monitoring
+## Résultat attendu
 
-**Monitoring traditionnel :**
-- Surveillance passive avec alertes prédéfinies
-- Métriques pré-configurées
-- Approche réactive
+Un support de présentation (≈20 diapositives) qui couvre :
+- les trois piliers de l’observabilité et la différence monitoring/observabilité ;
+- Prometheus, Grafana, Loki, Alertmanager : rôle, architecture simplifiée, cas d’usage concret ;
+- l’approche Infrastructure as Code avec Terraform (provisionnement) et Ansible (configuration) ;
+- comment ces briques formeront la solution à construire dans les phases suivantes.
 
-**Observabilité moderne :**
-- Capacité à explorer et comprendre le système
-- Trois piliers : Métriques, Logs, Traces
-- Approche proactive et exploratoire
+## Préparation rapide
 
-### Les trois piliers de l'observabilité
+1. Lisez le README racine du projet pour comprendre l’objectif global.
+2. Créez un fichier `NOTES.md` ou un document pour vos résumés et sources.
+3. Ouvrez les rappels techniques dans `docs/rappels-theoriques/` (Docker, Prometheus, Grafana).
 
-1. **Métriques (Metrics)**
-   - Mesures numériques dans le temps
-   - Exemples : CPU, mémoire, latence, débit
-   - Stockage efficace, agrégation facile
+## Plan guidé
 
-2. **Logs**
-   - Événements textuels avec timestamp
-   - Contexte détaillé des événements
-   - Recherche et analyse
+### 1. Comprendre l’observabilité moderne
+- Reformulez la différence monitoring vs observabilité avec vos mots.
+- Listez les trois piliers (métriques, logs, traces) + un exemple concret par pilier.
+- Notez pourquoi l’observabilité permet de répondre à des questions imprévues.
 
-3. **Traces (optionnel pour ce projet)**
-   - Chemins d'exécution à travers les services
-   - Compréhension des dépendances
-   - Analyse de performance distribuée
+### 2. Décortiquer chaque outil
+Pour chaque composant (Prometheus, Grafana, Loki, Alertmanager) :
+1. Quel problème résout-il ?
+2. Quels sont ses principaux blocs (schéma simple suffisant) ?
+3. Comment l’outil interagira avec l’application exemple fournie ?
+4. Quelles sont les erreurs fréquentes à éviter ?
 
-### Prometheus
+Servez-vous des documents dans `docs/` et de la documentation officielle (liens présents dans le README racine). Gardez des illustrations simples : tableau, liste de flux, capture schématique.
 
-**Qu'est-ce que Prometheus ?**
-- Système de monitoring et d'alerte open source
-- Collecte des métriques via pull (scraping)
-- Stockage time-series efficace
-- Langage de requête PromQL
+### 3. Relier la théorie à l’IaC
+- Décrivez en 2-3 diapositives ce qu’est l’Infrastructure as Code.
+- Expliquez ce que Terraform fera dans ce projet (créer les ressources) et ce qu’Ansible fera (configurer/déployer).
+- Ajoutez un mini workflow : « Terraform → machines disponibles → Ansible → outils installés ».
 
-**Architecture :**
-- Prometheus Server : Collecte et stocke les métriques
-- Exporters : Exposent les métriques des applications
-- Service Discovery : Découverte automatique des targets
-- Alertmanager : Gestion des alertes
+### 4. Préparer le fil conducteur du projet
+- Résumez l’application exemple (`application-example/app.py`) en deux phrases.
+- Expliquez comment elle sera supervisée : métriques exposées, logs collectés, dashboards nécessaires, alertes envisagées.
+- Présentez les 10 phases en une ligne chacune pour montrer la progression.
 
-**Concepts clés :**
-- **Metrics** : Types (Counter, Gauge, Histogram, Summary)
-- **Scraping** : Collecte périodique des métriques
-- **PromQL** : Langage de requête pour les métriques
-- **Alerting Rules** : Règles pour déclencher des alertes
+### 5. Structurer la présentation finale
+Un ordre possible :
+1. Objectifs et enjeux de l’observabilité
+2. Monitoring vs observabilité, trois piliers
+3. Zoom Prometheus
+4. Zoom Grafana
+5. Zoom Loki
+6. Zoom Alertmanager
+7. Infrastructure as Code (Terraform + Ansible)
+8. Aperçu de l’application et vision globale du projet
+9. Plan des phases
+10. Questions ouvertes / prochaines étapes
 
-### Grafana
+### 6. Vérifications rapides
+- Chaque slide répond-elle à une question claire ?
+- Avez-vous noté vos sources et définitions (utile pour la soutenance) ?
+- Êtes-vous capable d’expliquer en moins de 2 minutes comment Prometheus et Grafana coopèrent ?
 
-**Qu'est-ce que Grafana ?**
-- Plateforme open source de visualisation et d'analyse
-- Connexion à multiples sources de données
-- Création de dashboards interactifs
-- Alerting intégré
+## Exercice pratique associé
 
-**Fonctionnalités :**
-- Dashboards personnalisables
-- Panels variés (graphiques, tableaux, jauges)
-- Variables de dashboard
-- Annotations et alertes visuelles
+Avant (ou pendant) la préparation de votre présentation, réalisez l’exercice décrit dans `EXERCICE.md`. Il vous guide pour :
+- installer Prometheus localement ;
+- vérifier le scraping d’une cible simple ;
+- relire les métriques exposées par l’application exemple.
 
-### Loki
+L’objectif est d’illustrer vos slides par une démonstration que vous avez déjà testée. La **solution expliquée** se trouve dans `corrections/solution-expliquee.encrypted` (déchiffrable une fois votre travail soumis).
 
-**Qu'est-ce que Loki ?**
-- Système d'agrégation de logs open source
-- Conçu pour être simple et économique
-- Indexation par labels (pas par contenu)
-- Intégration native avec Grafana
+## Livrables de la phase
 
-**Architecture :**
-- Distributor : Réception des logs
-- Ingester : Stockage des logs
-- Querier : Requêtes sur les logs
-- Index : Indexation par labels
+- Présentation (PDF, PPTX, etc.) avec au moins :
+  - Observabilité et trois piliers
+  - Détails sur Prometheus, Grafana, Loki, Alertmanager
+  - Rôle de Terraform et Ansible
+  - Plan global du projet et application cible
+- Notes personnelles / références (format libre)
+- Exercice exécuté + observations notées
 
-**Concepts clés :**
-- **Labels** : Métadonnées pour indexer les logs
-- **LogQL** : Langage de requête pour les logs
-- **Streams** : Flux de logs avec mêmes labels
+## Checklist avant de passer à la Phase 2
 
-### Alertmanager
+- [ ] Je peux expliquer la différence monitoring / observabilité avec un exemple
+- [ ] Je sais comment Prometheus collecte les métriques de l’application exemple
+- [ ] Je comprends ce que Grafana affichera et d’où viennent ses données
+- [ ] Je vois pourquoi Loki est complémentaire aux métriques
+- [ ] Je peux résumer en une phrase le rôle d’Alertmanager
+- [ ] Je distingue clairement Terraform (provisionnement) et Ansible (configuration)
+- [ ] Mon exercice Prometheus fonctionne localement
 
-**Qu'est-ce qu'Alertmanager ?**
-- Gestion et routage des alertes Prometheus
-- Groupement et déduplication
-- Routage vers différents récepteurs
-- Silencing et inhibition
-
-**Fonctionnalités :**
-- Grouping : Regrouper les alertes similaires
-- Routing : Diriger vers les bons canaux
-- Notifications : Email, webhook, Slack, etc.
-- Silencing : Masquer temporairement des alertes
-
-### Infrastructure as Code (IaC)
-
-**Concepts :**
-- Gestion de l'infrastructure via du code
-- Versioning de l'infrastructure
-- Reproductibilité et cohérence
-- Automatisation complète
-
-**Terraform :**
-- Provisionnement d'infrastructure
-- Multi-cloud support
-- State management
-- Plan et Apply
-
-**Ansible :**
-- Configuration management
-- Idempotence
-- Playbooks et Roles
-- Agentless
-
-## Exercice pratique : Comprendre l'écosystème
-
-**Consultez le fichier EXERCICE.md dans ce dossier pour l'exercice complet avec correction détaillée.**
-
-**Résumé de l'exercice :**
-- Installer et configurer Prometheus localement
-- Comprendre le scraping de métriques
-- Créer des règles d'alerte simples
-- Visualiser les métriques dans Grafana
-
-## Tâches du projet
-
-### Étape 1 : Étudier Prometheus
-
-**À faire :**
-1. Lire la documentation officielle de Prometheus
-2. Comprendre l'architecture et les concepts
-3. Identifier les cas d'usage
-4. Préparer une présentation (5-7 slides)
-
-**Points à couvrir :**
-- Architecture générale
-- Modèle de données (métriques, labels)
-- Scraping et service discovery
-- PromQL (exemples de requêtes)
-- Intégration avec les applications
-
-### Étape 2 : Étudier Grafana
-
-**À faire :**
-1. Lire la documentation officielle de Grafana
-2. Comprendre les fonctionnalités principales
-3. Identifier les types de panels
-4. Préparer une présentation (3-5 slides)
-
-**Points à couvrir :**
-- Architecture et rôles
-- Types de datasources
-- Création de dashboards
-- Variables et templating
-- Alerting dans Grafana
-
-### Étape 3 : Étudier Loki
-
-**À faire :**
-1. Lire la documentation officielle de Loki
-2. Comprendre le modèle de données
-3. Comprendre LogQL
-4. Préparer une présentation (3-5 slides)
-
-**Points à couvrir :**
-- Architecture et composants
-- Modèle de données (labels, streams)
-- LogQL (exemples de requêtes)
-- Intégration avec Promtail
-- Différences avec Elasticsearch
-
-### Étape 4 : Étudier Alertmanager
-
-**À faire :**
-1. Lire la documentation officielle d'Alertmanager
-2. Comprendre le routage des alertes
-3. Comprendre le grouping et silencing
-4. Préparer une présentation (2-3 slides)
-
-**Points à couvrir :**
-- Architecture et rôles
-- Configuration du routage
-- Récepteurs (email, webhook)
-- Grouping et déduplication
-
-### Étape 5 : Étudier l'IaC
-
-**À faire :**
-1. Comprendre les concepts d'Infrastructure as Code
-2. Étudier Terraform (provisionnement)
-3. Étudier Ansible (configuration)
-4. Préparer une présentation (5-7 slides)
-
-**Points à couvrir :**
-- Concepts IaC et avantages
-- Terraform : provisionnement, state, providers
-- Ansible : playbooks, roles, idempotence
-- Complémentarité Terraform + Ansible
-- Cas d'usage dans DevOps
-
-### Étape 6 : Cas d'usage
-
-**À faire :**
-1. Identifier des cas d'usage concrets
-2. Préparer une présentation (3-5 slides)
-
-**Exemples de cas d'usage :**
-- Monitoring d'applications microservices
-- Analyse de logs distribués
-- Supervision de performance
-- Détection proactive d'incidents
-- Amélioration continue basée sur les métriques
-
-## Livrable de la phase
-
-À la fin de cette phase, vous devez avoir :
-
-- [ ] Présentation PowerPoint (minimum 20 slides) couvrant :
-  - Prometheus (architecture, concepts, cas d'usage)
-  - Grafana (fonctionnalités, dashboards)
-  - Loki (architecture, LogQL)
-  - Alertmanager (routage, notifications)
-  - Concepts IaC et justification Terraform/Ansible
-  - Cas d'usage d'une solution d'observabilité
-- [ ] Compréhension claire de chaque outil
-- [ ] Identification des interactions entre outils
-- [ ] Documentation de vos recherches
-
-## Vérification
-
-Testez votre compréhension :
-
-1. **Pouvez-vous expliquer** la différence entre monitoring et observabilité ?
-2. **Pouvez-vous décrire** comment Prometheus collecte les métriques ?
-3. **Pouvez-vous expliquer** pourquoi Loki est différent d'Elasticsearch ?
-4. **Pouvez-vous justifier** l'utilisation de Terraform et Ansible ensemble ?
-
-## Problèmes courants
-
-- **Confusion monitoring/observabilité** : Lisez les articles de référence
-- **Complexité de PromQL** : Pratiquez avec des exemples simples
-- **Compréhension de l'IaC** : Faites des exercices pratiques
-
-## Notes importantes
-
-- Cette phase est théorique mais essentielle
-- Prenez le temps de bien comprendre chaque outil
-- La présentation sera évaluée (30 points)
-- Documentez vos sources
-
-## Prochaine phase
-
-Une fois cette phase terminée et vérifiée, passez à la **Phase 2 : Conception de l'architecture**.
-
-**Commitez votre travail :**
-```bash
-git add .
-git commit -m "Phase 1: Étude théorique des outils d'observabilité"
-```
+Si tout est validé, commitez puis ouvrez `phase-2-architecture/README.md` pour concevoir l’architecture détaillée.
 
