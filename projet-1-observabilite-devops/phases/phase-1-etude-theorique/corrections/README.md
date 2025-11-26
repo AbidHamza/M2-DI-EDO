@@ -8,4 +8,3 @@ Pour accéder aux corrections :
 3. Utilisez le script de déchiffrement : `../../scripts/decrypt.sh`
 
 Les fichiers `.encrypted` contiennent les corrections détaillées.
-
