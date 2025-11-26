@@ -76,13 +76,24 @@ projet-1-observabilite-devops/
 │   ├── phase-9-integration/
 │   └── phase-10-tests-analyse/
 ├── docs/                        # Documentation et ressources
-│   ├── architecture.md
-│   ├── prometheus-config.md
-│   └── best-practices.md
-├── terraform/                   # Scripts Terraform
-├── ansible/                     # Playbooks Ansible
-├── docker-compose/              # Configuration Docker
-└── application-example/         # Application exemple à superviser
+│   ├── architecture.md          # Architecture de la solution
+│   ├── prometheus-config.md    # Guide configuration Prometheus
+│   ├── alternatives-gratuites.md # Services gratuits pour déploiement
+│   └── rappels-theoriques/      # Rappels théoriques détaillés
+│       ├── kubernetes.md        # Kubernetes avec exercices
+│       ├── docker-avance.md    # Docker avancé
+│       ├── prometheus-avance.md # Prometheus avancé
+│       └── grafana-avance.md   # Grafana avancé
+├── scripts/                     # Scripts utilitaires
+│   ├── decrypt.sh              # Déchiffrer les corrections (étudiants)
+│   ├── encrypt.sh              # Chiffrer les corrections (enseignant)
+│   ├── encrypt-all.sh          # Chiffrer toutes les corrections (Linux/Mac)
+│   └── encrypt-all.ps1         # Chiffrer toutes les corrections (Windows)
+├── application-example/         # Application exemple à superviser
+│   ├── app.py                  # Application Flask avec métriques
+│   ├── Dockerfile              # Image Docker
+│   └── docker-compose.yml     # Déploiement local
+└── COMMENT-ACCEDER-AUX-CORRECTIONS.md # Guide pour accéder aux corrections
 ```
 
 ## Plan des phases - Vue d'ensemble
@@ -475,6 +486,23 @@ docker ps
 - Configurer des alertes utiles (pas trop, pas trop peu)
 
 ## Ressources utiles
+
+### Documentation dans ce projet
+
+- **`docs/architecture.md`** : Architecture détaillée de la solution
+- **`docs/prometheus-config.md`** : Guide complet de configuration Prometheus
+- **`docs/alternatives-gratuites.md`** : Tous les services gratuits disponibles
+- **`docs/rappels-theoriques/`** : Rappels théoriques avec exercices pratiques
+  - `kubernetes.md` : Kubernetes pour l'observabilité
+  - `docker-avance.md` : Docker avancé
+  - `prometheus-avance.md` : Prometheus avancé
+  - `grafana-avance.md` : Grafana avancé
+
+### Scripts disponibles
+
+- **`scripts/decrypt.sh`** : Déchiffrer les corrections (après avoir le mot de passe)
+- **`scripts/encrypt.sh`** : Chiffrer les corrections (pour l'enseignant)
+- **`COMMENT-ACCEDER-AUX-CORRECTIONS.md`** : Guide complet pour accéder aux corrections
 
 ### Documentation officielle
 

@@ -82,14 +82,23 @@ projet-2-cicd-devsecops/
 │   ├── phase-9-multi-environnements/
 │   └── phase-10-analyse-amelioration/
 ├── docs/                        # Documentation et ressources
-│   ├── architecture.md
-│   ├── pipeline-design.md
-│   └── security-practices.md
-├── terraform/                   # Scripts Terraform
-├── ansible/                     # Playbooks Ansible
-├── .gitlab-ci.yml              # Pipeline GitLab CI
+│   ├── pipeline-design.md      # Design du pipeline CI/CD
+│   ├── security-practices.md    # Pratiques de sécurité
+│   ├── alternatives-gratuites.md # Services gratuits pour CI/CD
+│   └── rappels-theoriques/      # Rappels théoriques détaillés
+│       ├── git-avance.md       # Git avancé avec exercices
+│       └── docker-avance.md    # Docker pour CI/CD
+├── scripts/                     # Scripts utilitaires
+│   ├── decrypt.sh              # Déchiffrer les corrections (étudiants)
+│   ├── encrypt.sh              # Chiffrer les corrections (enseignant)
+│   ├── encrypt-all.sh          # Chiffrer toutes les corrections (Linux/Mac)
+│   └── encrypt-all.ps1         # Chiffrer toutes les corrections (Windows)
 ├── application-example/         # Application exemple à déployer
-└── sonarqube/                  # Configuration SonarQube
+│   ├── main.py                 # API FastAPI
+│   ├── Dockerfile              # Image Docker
+│   └── tests/                  # Tests unitaires
+├── .gitlab-ci.yml              # Pipeline GitLab CI
+└── COMMENT-ACCEDER-AUX-CORRECTIONS.md # Guide pour accéder aux corrections
 ```
 
 ## Plan des phases - Vue d'ensemble
@@ -523,6 +532,21 @@ ansible-playbook --syntax-check playbook.yml
 - Maintenir une documentation à jour
 
 ## Ressources utiles
+
+### Documentation dans ce projet
+
+- **`docs/pipeline-design.md`** : Design détaillé du pipeline CI/CD
+- **`docs/security-practices.md`** : Pratiques de sécurité DevSecOps
+- **`docs/alternatives-gratuites.md`** : Tous les services gratuits pour CI/CD
+- **`docs/rappels-theoriques/`** : Rappels théoriques avec exercices pratiques
+  - `git-avance.md` : Git avancé et workflows
+  - `docker-avance.md` : Docker pour CI/CD
+
+### Scripts disponibles
+
+- **`scripts/decrypt.sh`** : Déchiffrer les corrections (après avoir le mot de passe)
+- **`scripts/encrypt.sh`** : Chiffrer les corrections (pour l'enseignant)
+- **`COMMENT-ACCEDER-AUX-CORRECTIONS.md`** : Guide complet pour accéder aux corrections
 
 ### Documentation officielle
 
