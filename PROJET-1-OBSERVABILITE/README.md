@@ -1,15 +1,8 @@
 # Projet 1 : Observabilite DevOps avec ELK Stack
 
-## Objectifs pedagogiques
+## Objectif du projet
 
-A la fin de ce projet, vous saurez :
-- Generer et structurer des donnees pour l'analyse
-- Deployer une stack ELK avec Docker Compose
-- Configurer Logstash pour traiter des donnees CSV
-- Visualiser des donnees dans Kibana
-- Creer un pipeline CI/CD avec GitLab CI/CD
-- Containeriser une application avec Docker
-- Deployer une application sur une plateforme gratuite
+Mettre en place une infrastructure complete d'observabilite avec la stack ELK (Elasticsearch, Logstash, Kibana) pour monitorer et analyser des donnees de pollution atmospherique.
 
 ## Duree estimee
 
@@ -18,120 +11,123 @@ A la fin de ce projet, vous saurez :
 
 ## Prérequis
 
-- Compte GitLab cree et verifie
 - Docker installe et fonctionnel
 - Docker Compose installe
 - Python 3.8+ installe
 - 4 Go de RAM minimum disponibles
-- Terminal/Shell fonctionnel
 
-## Parcours d'apprentissage
+## Parcours complet - Etapes du projet
 
-### Etape 1 : Preparation (15-30 minutes)
+Ce projet est divise en 7 etapes progressives. Suivez-les dans l'ordre pour garantir votre succes.
 
-Objectifs :
+### Etape 01 : Preparation de l'environnement
+
+**Objectif** : Installer et configurer Docker pour deployer la stack ELK
+
+**Duree** : 15-30 minutes
+
+**Ce que vous allez faire** :
 - Verifier l'installation de Docker
-- Comprendre l'architecture du projet
-- Preparer l'environnement de developpement
+- Installer Docker si necessaire
+- Tester que Docker fonctionne correctement
 
-[Commencer l'etape 1](01-preparation/README.md)
+[Guide complet de l'etape 01](ETAPE-01-PREPARATION.md)
 
-### Etape 2 : Generation de donnees (30-45 minutes)
+### Etape 02 : Generation de donnees
 
-Objectifs :
-- Creer un script Python pour generer des donnees
-- Comprendre le format de donnees attendu
+**Objectif** : Creer un script Python pour generer des donnees de test realistes
+
+**Duree** : 30-45 minutes
+
+**Ce que vous allez faire** :
+- Creer un script Python pour generer des donnees CSV
+- Generer des donnees de pollution pour plusieurs villes
 - Valider la structure des donnees generees
 
-[Commencer l'etape 2](02-generation-donnees/README.md)
+[Guide complet de l'etape 02](ETAPE-02-GENERATION-DONNEES.md)
 
-### Etape 3 : Stack ELK (1h-1h30)
+### Etape 03 : Deploiement de la stack ELK
 
-Objectifs :
-- Deployer Elasticsearch, Logstash et Kibana
-- Configurer le pipeline de traitement
+**Objectif** : Deployer Elasticsearch, Logstash et Kibana avec Docker Compose
+
+**Duree** : 1h-1h30
+
+**Ce que vous allez faire** :
+- Configurer Docker Compose pour la stack ELK
+- Configurer Logstash pour traiter les donnees CSV
 - Indexer les donnees dans Elasticsearch
+- Acceder a Kibana
 
-[Commencer l'etape 3](03-stack-elk/README.md)
+[Guide complet de l'etape 03](ETAPE-03-STACK-ELK.md)
 
-### Etape 4 : Visualisation Kibana (45 minutes-1h)
+### Etape 04 : Visualisation avec Kibana
 
-Objectifs :
+**Objectif** : Creer des visualisations et des dashboards dans Kibana
+
+**Duree** : 45 minutes-1h
+
+**Ce que vous allez faire** :
+- Explorer les donnees indexees dans Elasticsearch
 - Creer des visualisations dans Kibana
-- Explorer les donnees indexees
 - Construire des dashboards de monitoring
 
-[Commencer l'etape 4](04-visualisation-kibana/README.md)
+[Guide complet de l'etape 04](ETAPE-04-VISUALISATION-KIBANA.md)
 
-### Etape 5 : CI/CD GitLab (1h-1h30)
+### Etape 05 : CI/CD avec GitLab
 
-Objectifs :
-- Creer un pipeline GitLab CI/CD
+**Objectif** : Creer un pipeline GitLab CI/CD pour automatiser les tests et le deploiement
+
+**Duree** : 1h-1h30
+
+**Ce que vous allez faire** :
+- Creer un fichier .gitlab-ci.yml
+- Configurer les stages du pipeline (validate, build, test, deploy)
 - Automatiser les tests et le build
 - Configurer le deploiement automatique
 
-[Commencer l'etape 5](05-ci-cd-gitlab/README.md)
+[Guide complet de l'etape 05](ETAPE-05-CICD-GITLAB.md)
 
-### Etape 6 : Containerisation (45 minutes-1h)
+### Etape 06 : Containerisation
 
-Objectifs :
-- Creer un Dockerfile pour l'application
-- Construire des images Docker optimisees
-- Configurer Docker Compose pour la production
+**Objectif** : Creer un Dockerfile pour containeriser l'application
 
-[Commencer l'etape 6](06-containerisation/README.md)
+**Duree** : 45 minutes-1h
 
-### Etape 7 : Deploiement gratuit (1h-1h30)
+**Ce que vous allez faire** :
+- Creer un Dockerfile optimise
+- Construire une image Docker
+- Tester l'image localement
 
-Objectifs :
-- Deployer l'application sur une plateforme gratuite
-- Configurer les variables d'environnement
-- Mettre en place le monitoring
+[Guide complet de l'etape 06](ETAPE-06-CONTAINERISATION.md)
 
-[Commencer l'etape 7](07-deploiement-gratuit/README.md)
+### Etape 07 : Deploiement gratuit
 
-## Structure du projet
+**Objectif** : Deployer l'application sur une plateforme gratuite
 
-Ce projet est organise en 7 etapes progressives. Chaque etape contient :
+**Duree** : 1h-1h30
 
-- README.md : Vue d'ensemble et objectifs de l'etape
-- INSTRUCTIONS-PAS-A-PAS.md : Instructions detaillees numerotees
-- VERIFICATION.md : Comment verifier que tout fonctionne
-- PROBLEMES-SOLUTIONS.md : Solutions a tous les problemes courants
-- SORTIE-ATTENDUE.md : Exemples de ce que vous devriez voir
-- Scripts : Scripts automatises pour installation et verification
+**Ce que vous allez faire** :
+- Choisir une plateforme de deploiement gratuite (Railway, Render, Fly.io)
+- Configurer le deploiement
+- Deployer l'application
+- Verifier que l'application fonctionne
 
-## Comment utiliser ce projet
-
-1. Lisez ce README pour comprendre les objectifs
-2. Suivez les etapes dans l'ordre (01, 02, 03...)
-3. Lisez le README de chaque etape avant de commencer
-4. Suivez les INSTRUCTIONS-PAS-A-PAS.md pour chaque etape
-5. Validez chaque etape avec les scripts de verification avant de continuer
-6. Consultez PROBLEMES-SOLUTIONS.md si vous rencontrez un probleme
+[Guide complet de l'etape 07](ETAPE-07-DEPLOIEMENT.md)
 
 ## Validation finale
 
-Une fois toutes les etapes terminees, vous devriez pouvoir :
-- Generer des donnees de pollution
-- Voir les donnees dans Elasticsearch
-- Visualiser les donnees dans Kibana avec des dashboards
-- Executer un pipeline GitLab CI/CD qui fonctionne
-- Deployer l'application sur une plateforme gratuite
-
-## Prochaines etapes
-
-Apres ce projet, vous pouvez :
-- Passer au Projet 2 : CI/CD DevSecOps
-- Approfondir avec la documentation
-- Personnaliser votre stack ELK
-- Ajouter plus de fonctionnalites
+Apres avoir termine toutes les etapes, vous devriez avoir :
+- Une application de monitoring fonctionnelle
+- Une stack ELK deployee et operationnelle
+- Des dashboards Kibana crees
+- Un pipeline CI/CD fonctionnel
+- Une application deployee en production
 
 ## Ressources supplementaires
 
-- [Architecture complete](docs/ARCHITECTURE-COMPLETE.md)
-- [Concepts DevOps](docs/CONCEPTS-DEVOPS.md)
-- [FAQ](docs/FAQ.md)
+- [Documentation Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+- [Documentation Logstash](https://www.elastic.co/guide/en/logstash/current/index.html)
+- [Documentation Kibana](https://www.elastic.co/guide/en/kibana/current/index.html)
+- [Documentation GitLab CI/CD](https://docs.gitlab.com/ee/ci/)
 
 Bon apprentissage !
-
