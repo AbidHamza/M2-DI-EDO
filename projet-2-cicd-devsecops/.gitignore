@@ -1,0 +1,39 @@
+# Corrections non chiffrées (ne jamais commiter)
+**/corrections/*.md
+**/corrections/*.yml
+**/corrections/*.yaml
+!**/corrections/*.encrypted
+!**/corrections/README.md
+
+# Fichiers temporaires
+*.tmp
+*.log
+.DS_Store
+
+# Environnements
+.env
+.venv
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
