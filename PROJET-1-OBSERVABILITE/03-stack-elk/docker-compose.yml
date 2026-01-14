@@ -1,0 +1,82 @@
+# Configuration Docker Compose pour la stack ELK
+# Cette configuration deploye Elasticsearch, Logstash et Kibana
+
+version: '3.8'
+
+services:
+  # Service Elasticsearch : Base de donnees de recherche et d'analyse
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      # Configuration pour un seul noeud (developpement)
+      - discovery.type=single-node
+      # Desactiver la securite pour simplifier (ne pas faire en production)
+      - xpack.security.enabled=false
+      # Allocation de memoire pour Elasticsearch
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      # Port HTTP pour acceder a Elasticsearch
+      - "9200:9200"
+    networks:
+      - elk
+    volumes:
+      # Persistance des donnees Elasticsearch
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Service Kibana : Interface de visualisation
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    ports:
+      # Port HTTP pour acceder a Kibana
+      - "5601:5601"
+    environment:
+      # URL d'Elasticsearch (utilise le nom du service Docker)
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - elk
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Service Logstash : Pipeline de traitement de donnees
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      # Configuration du pipeline Logstash
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      # Fichier CSV de donnees (chemin relatif depuis ce dossier)
+      - ../02-generation-donnees/pollution_data.csv:/usr/share/logstash/pollution_data.csv
+    ports:
+      # Port pour recevoir des donnees (non utilise dans ce projet)
+      - "5044:5044"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - elk
+    environment:
+      # Configuration Logstash
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+
+# Reseau Docker pour connecter les services
+networks:
+  elk:
+    driver: bridge
+
+# Volumes pour la persistance des donnees
+volumes:
+  elasticsearch_data:
+    driver: local

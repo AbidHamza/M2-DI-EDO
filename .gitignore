@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Donnees generees
+*.csv
+!sample_output.csv
+!example_data.csv
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Environnement virtuel
+venv/
+ENV/
+env/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# Pytest
+.pytest_cache/
+.tox/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Elasticsearch
+data/
+*.pid
+
+# Kibana
+.kibana/
+
+# Logstash
+sincedb_files/
+*.sincedb
+
+# Secrets et configurations sensibles
+.env
+.env.local
+*.key
+*.pem
+secrets/
+
+# Build
+build/
+dist/
+*.egg-info/
+
