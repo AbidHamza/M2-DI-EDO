@@ -1,0 +1,174 @@
+# Pipeline GitLab CI/CD pour le projet Observabilite DevOps
+# Ce fichier definit les etapes automatisees qui s'executent a chaque push
+
+# Image Docker de base pour tous les jobs
+image: docker:latest
+
+# Services necessaires pour Docker-in-Docker
+services:
+  - docker:dind
+
+# Variables globales pour tous les jobs
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_BUILDKIT: 1
+
+# Definition des stages (etapes) du pipeline
+# Les stages s'executent dans l'ordre defini
+stages:
+  - validate      # Etape 1 : Validation du code
+  - build         # Etape 2 : Construction de l'application
+  - test          # Etape 3 : Execution des tests
+  - deploy        # Etape 4 : Deploiement (optionnel)
+
+# ============================================
+# STAGE 1 : VALIDATION
+# ============================================
+
+# Job : Validation du code Python
+validate-python:
+  stage: validate
+  image: python:3.10
+  script:
+    - echo "=== Validation du code Python ==="
+    - pip install flake8 black
+    - echo "Verification du style de code avec flake8..."
+    - flake8 --max-line-length=120 --extend-ignore=E203,W503 *.py || true
+    - echo "Verification du format avec black..."
+    - black --check *.py || true
+    - echo "Validation terminee"
+  only:
+    - merge_requests
+    - main
+    - develop
+  allow_failure: true  # Ne bloque pas le pipeline si ca echoue
+
+# Job : Validation des fichiers YAML
+validate-yaml:
+  stage: validate
+  image: alpine:latest
+  script:
+    - echo "=== Validation des fichiers YAML ==="
+    - apk add --no-cache yamllint
+    - yamllint .gitlab-ci.yml docker-compose.yml || true
+    - echo "Validation YAML terminee"
+  only:
+    - merge_requests
+    - main
+  allow_failure: true
+
+# ============================================
+# STAGE 2 : BUILD
+# ============================================
+
+# Job : Construction de l'image Docker
+build-docker-image:
+  stage: build
+  before_script:
+    - echo "=== Preparation de la construction ==="
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "=== Construction de l'image Docker ==="
+    - echo "Tag de l'image : $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+    - echo "=== Push de l'image vers GitLab Container Registry ==="
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - echo "Image construite et poussee avec succes"
+  after_script:
+    - echo "=== Nettoyage ==="
+    - docker logout $CI_REGISTRY
+  only:
+    - main
+    - develop
+  tags:
+    - docker  # Utilise un runner avec Docker
+
+# ============================================
+# STAGE 3 : TEST
+# ============================================
+
+# Job : Tests unitaires Python
+test-python:
+  stage: test
+  image: python:3.10
+  before_script:
+    - echo "=== Preparation des tests ==="
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov pytest-mock
+  script:
+    - echo "=== Execution des tests unitaires ==="
+    - pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
+    - echo "Tests termines"
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Job : Tests d'integration Docker
+test-docker:
+  stage: test
+  script:
+    - echo "=== Tests d'integration Docker ==="
+    - docker-compose -f docker-compose.yml config
+    - echo "Configuration Docker Compose valide"
+  only:
+    - merge_requests
+    - main
+
+# ============================================
+# STAGE 4 : DEPLOY
+# ============================================
+
+# Job : Deploiement sur Railway (optionnel)
+deploy-railway:
+  stage: deploy
+  image: node:16
+  before_script:
+    - echo "=== Preparation du deploiement Railway ==="
+    - npm install -g @railway/cli
+  script:
+    - echo "=== Deploiement sur Railway ==="
+    - railway login --token $RAILWAY_TOKEN
+    - railway link $RAILWAY_PROJECT_ID
+    - railway up --detach
+    - echo "Deploiement termine"
+  environment:
+    name: production
+    url: https://$RAILWAY_DOMAIN
+  only:
+    - main
+  when: manual  # Deploiement manuel
+  # Decommentez la ligne suivante pour deploiement automatique :
+  # when: on_success
+
+# ============================================
+# CONFIGURATION GLOBALE
+# ============================================
+
+# Cache pour accelerer les builds
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pip-cache/
+
+# Configuration par defaut pour tous les jobs
+default:
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
