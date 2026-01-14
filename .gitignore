@@ -84,3 +84,16 @@ build/
 dist/
 *.egg-info/
 
+# Fichiers non necessaires pour le projet M2
+*.pdf
+*.docx
+*.doc
+Lab0_Projet*.pdf
+Projet_M2.docx
+Laurence*.docx
+lab0.py
+requirements.txt
+
+# Anciens dossiers
+EDO_M1/
+LAB0-EDO/
