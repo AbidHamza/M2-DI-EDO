@@ -1,0 +1,296 @@
+# =============================================================================
+# GitLab CI/CD Pipeline — DevSecOps Finance App
+# =============================================================================
+# Pipeline stages: test → quality → security → build → deploy
+# Triggered on every push and merge request
+# Deploy stages require manual approval on main branch
+# =============================================================================
+
+stages:
+  - test
+  - quality
+  - security
+  - build
+  - deploy
+
+# ---------------------------------------------------------------------------
+# Global variables
+# ---------------------------------------------------------------------------
+variables:
+  PYTHON_VERSION: "3.11"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  IMAGE_LATEST: "$CI_REGISTRY_IMAGE:latest"
+
+# ---------------------------------------------------------------------------
+# Global cache — shared pip cache across jobs
+# ---------------------------------------------------------------------------
+cache:
+  key: "${CI_COMMIT_REF_SLUG}-pip"
+  paths:
+    - .pip-cache/
+
+# =============================================================================
+# STAGE 1: TEST — Unit tests with pytest + coverage
+# =============================================================================
+unit-tests:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - cd app
+    - pip install --cache-dir $PIP_CACHE_DIR -r requirements.txt
+  script:
+    - echo "=== Running unit tests with coverage ==="
+    - pytest tests/ -v
+        --cov=.
+        --cov-report=xml:coverage.xml
+        --cov-report=term-missing
+        --junitxml=report.xml
+    - echo "=== Tests completed ==="
+  artifacts:
+    when: always
+    reports:
+      junit: app/report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: app/coverage.xml
+    paths:
+      - app/coverage.xml
+      - app/report.xml
+    expire_in: 7 days
+  coverage: '/TOTAL.*\s+(\d+)%/'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# =============================================================================
+# STAGE 2: QUALITY — SonarQube static code analysis
+# =============================================================================
+sonarqube-analysis:
+  stage: quality
+  image:
+    name: sonarsource/sonar-scanner-cli:5
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"  # Full clone for blame analysis
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - echo "=== Running SonarQube analysis ==="
+    - sonar-scanner
+        -Dsonar.projectKey=${SONAR_PROJECT_KEY:-finance-app}
+        -Dsonar.projectName="Finance App - DevSecOps"
+        -Dsonar.sources=app/
+        -Dsonar.tests=app/tests/
+        -Dsonar.host.url=${SONAR_HOST_URL}
+        -Dsonar.token=${SONAR_TOKEN}
+        -Dsonar.python.coverage.reportPaths=app/coverage.xml
+        -Dsonar.qualitygate.wait=true
+        -Dsonar.qualitygate.timeout=300
+    - echo "=== SonarQube analysis completed ==="
+  dependencies:
+    - unit-tests  # Needs coverage.xml artifact
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# =============================================================================
+# STAGE 3: SECURITY — Bandit SAST + Trivy vulnerability scan
+# =============================================================================
+
+# --- Bandit: Python Security Linter (SAST) ---
+bandit-sast:
+  stage: security
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install --cache-dir $PIP_CACHE_DIR bandit
+  script:
+    - echo "=== Running Bandit SAST scan ==="
+    # Generate JSON report for artifacts
+    - bandit -r app/ -x app/tests/ -f json -o bandit-report.json --severity-level medium || true
+    # Display readable output in pipeline logs
+    - bandit -r app/ -x app/tests/ -f screen --severity-level medium
+    - echo "=== Bandit scan completed ==="
+  artifacts:
+    paths:
+      - bandit-report.json
+    expire_in: 7 days
+    when: always
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# --- Trivy: Vulnerability Scanner ---
+trivy-scan:
+  stage: security
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - echo "=== Running Trivy filesystem scan ==="
+    # Scan project dependencies for known vulnerabilities
+    - trivy fs
+        --severity HIGH,CRITICAL
+        --exit-code 0
+        --format table
+        app/
+    # Generate JSON report for artifacts
+    - trivy fs
+        --severity HIGH,CRITICAL
+        --exit-code 0
+        --format json
+        --output trivy-fs-report.json
+        app/
+    - echo "=== Trivy scan completed ==="
+  artifacts:
+    paths:
+      - trivy-fs-report.json
+    expire_in: 7 days
+    when: always
+  allow_failure: true  # Informational — does not block pipeline
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# --- pip-audit: Python dependency audit ---
+dependency-audit:
+  stage: security
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install --cache-dir $PIP_CACHE_DIR pip-audit
+  script:
+    - echo "=== Running pip-audit dependency check ==="
+    - pip-audit -r app/requirements.txt --format json -o pip-audit-report.json || true
+    - pip-audit -r app/requirements.txt || true
+    - echo "=== Dependency audit completed ==="
+  artifacts:
+    paths:
+      - pip-audit-report.json
+    expire_in: 7 days
+    when: always
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# =============================================================================
+# STAGE 4: BUILD — Docker image build and push to registry
+# =============================================================================
+docker-build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - echo "=== Logging in to GitLab Container Registry ==="
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "=== Building Docker image ==="
+    - docker build
+        -t $IMAGE_TAG
+        -t $IMAGE_LATEST
+        --label "git.commit=$CI_COMMIT_SHA"
+        --label "git.branch=$CI_COMMIT_BRANCH"
+        --label "ci.pipeline=$CI_PIPELINE_ID"
+        -f app/Dockerfile
+        app/
+    - echo "=== Pushing image to registry ==="
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_LATEST
+    - echo "=== Image pushed: $IMAGE_TAG ==="
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+# --- Trivy: Scan built Docker image ---
+trivy-image-scan:
+  stage: build
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "=== Scanning Docker image with Trivy ==="
+    - trivy image
+        --severity HIGH,CRITICAL
+        --exit-code 0
+        --format table
+        $IMAGE_TAG
+    - trivy image
+        --severity HIGH,CRITICAL
+        --exit-code 0
+        --format json
+        --output trivy-image-report.json
+        $IMAGE_TAG
+  artifacts:
+    paths:
+      - trivy-image-report.json
+    expire_in: 7 days
+    when: always
+  allow_failure: true
+  needs:
+    - docker-build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+# =============================================================================
+# STAGE 5: DEPLOY — Ansible deployment to target environment
+# =============================================================================
+
+# --- Deploy to Staging ---
+deploy-staging:
+  stage: deploy
+  image: cytopia/ansible:latest
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+  script:
+    - echo "=== Deploying to STAGING ==="
+    - cd ansible
+    - ansible-playbook -i inventory/staging.ini playbook.yml
+        --extra-vars "app_image=$IMAGE_TAG app_version=$CI_COMMIT_SHORT_SHA environment=staging"
+    - echo "=== Staging deployment complete ==="
+  environment:
+    name: staging
+    url: http://${DEPLOY_HOST_STAGING:-staging.example.com}:5002
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  when: manual
+
+# --- Deploy to Production ---
+deploy-production:
+  stage: deploy
+  image: cytopia/ansible:latest
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+  script:
+    - echo "=== Deploying to PRODUCTION ==="
+    - cd ansible
+    - ansible-playbook -i inventory/prod.ini playbook.yml
+        --extra-vars "app_image=$IMAGE_TAG app_version=$CI_COMMIT_SHORT_SHA environment=production"
+    - echo "=== Production deployment complete ==="
+  environment:
+    name: production
+    url: http://${DEPLOY_HOST_PROD:-prod.example.com}:5000
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  when: manual
+  needs:
+    - docker-build

@@ -1,0 +1,115 @@
+# =============================================================================
+# Prometheus Alert Rules
+# =============================================================================
+# These rules are evaluated every evaluation_interval (15s by default).
+# When a rule's expression is true for the specified duration ("for"),
+# the alert transitions to FIRING and is sent to Alertmanager.
+#
+# Alert lifecycle:
+#   INACTIVE → PENDING (expression true) → FIRING (duration elapsed) → RESOLVED
+# =============================================================================
+
+groups:
+  # ---------------------------------------------------------------------------
+  # Application Alerts
+  # ---------------------------------------------------------------------------
+  - name: application_alerts
+    rules:
+      # -----------------------------------------------------------------------
+      # HighErrorRate: Fires when more than 5% of requests return 5xx errors
+      # -----------------------------------------------------------------------
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(flask_http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(flask_http_requests_total[5m]))
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+          service: flask-app
+        annotations:
+          summary: "High error rate detected"
+          description: >
+            The error rate for the Flask application has exceeded 5%
+            over the last 5 minutes. Current error rate: {{ $value | printf "%.2f" }}%.
+            This may indicate an application bug, database issue, or
+            downstream service failure.
+          runbook_url: "https://wiki.example.com/runbooks/high-error-rate"
+
+      # -----------------------------------------------------------------------
+      # HighLatency: Fires when P95 latency exceeds 1 second
+      # -----------------------------------------------------------------------
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(flask_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: flask-app
+        annotations:
+          summary: "High request latency detected"
+          description: >
+            The 95th percentile request latency has exceeded 1 second
+            for the last 5 minutes. Current P95: {{ $value | printf "%.3f" }}s.
+            This could be caused by slow database queries, resource
+            contention, or increased traffic.
+          runbook_url: "https://wiki.example.com/runbooks/high-latency"
+
+      # -----------------------------------------------------------------------
+      # ServiceDown: Fires when a Prometheus target is unreachable
+      # -----------------------------------------------------------------------
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: >
+            The Prometheus target {{ $labels.instance }} (job: {{ $labels.job }})
+            has been unreachable for more than 1 minute.
+            Immediate investigation required.
+          runbook_url: "https://wiki.example.com/runbooks/service-down"
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure Alerts
+  # ---------------------------------------------------------------------------
+  - name: infrastructure_alerts
+    rules:
+      # -----------------------------------------------------------------------
+      # HighCpuUsage: Fires when CPU usage exceeds 80%
+      # -----------------------------------------------------------------------
+      - alert: HighCpuUsage
+        expr: |
+          100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: >
+            CPU usage has exceeded 80% for the last 5 minutes.
+            Current usage: {{ $value | printf "%.1f" }}%.
+            Consider scaling up or investigating resource-intensive processes.
+
+      # -----------------------------------------------------------------------
+      # HighMemoryUsage: Fires when memory usage exceeds 85%
+      # -----------------------------------------------------------------------
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: >
+            Memory usage has exceeded 85% for the last 5 minutes.
+            Current usage: {{ $value | printf "%.1f" }}%.
+            Check for memory leaks or consider adding more memory.

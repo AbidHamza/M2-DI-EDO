@@ -1,0 +1,310 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Dashboard for Finance App - DevSecOps Pipeline",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Application Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "value_and_name",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"finance-app\"}",
+          "legendFormat": "{{environment}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Active Accounts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "finance_app_active_accounts",
+          "legendFormat": "Accounts",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Total Transactions",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "finance_app_transactions_created_total",
+          "legendFormat": "Transactions",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Total Transfer Amount (EUR)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "orange", "value": null }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "finance_app_transfer_amount_total",
+          "legendFormat": "Amount",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Error Count",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "expr": "sum(finance_app_errors_total)",
+          "legendFormat": "Errors",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Requests per Second",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(finance_app_requests_total[5m])) by (endpoint)",
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Request Duration (P95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(finance_app_request_duration_seconds_bucket[5m])) by (le, endpoint))",
+          "legendFormat": "P95 {{endpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "HTTP Status Codes",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "stacking": { "mode": "normal" }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": ".*200.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*4[0-9]{2}.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": ".*5[0-9]{2}.*" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(finance_app_requests_total[5m])) by (status)",
+          "legendFormat": "HTTP {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Errors by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20
+          },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(finance_app_errors_total[5m])) by (type)",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["finance", "devsecops", "flask"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Finance App - DevSecOps",
+  "uid": "finance-app-devsecops",
+  "version": 1
+}

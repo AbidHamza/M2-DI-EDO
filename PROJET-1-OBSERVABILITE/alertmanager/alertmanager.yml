@@ -1,0 +1,117 @@
+# =============================================================================
+# Alertmanager Configuration
+# =============================================================================
+# Alertmanager handles alerts sent by Prometheus.
+# It manages: deduplication, grouping, routing, silencing, and notification.
+#
+# Flow: Prometheus alert rule fires → Alertmanager receives → routes → notifies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global configuration
+# ---------------------------------------------------------------------------
+global:
+  # Default SMTP settings for email notifications (uncomment to use)
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_from: 'alertmanager@example.com'
+  # smtp_auth_username: 'alertmanager@example.com'
+  # smtp_auth_password: 'your-app-password'
+  # smtp_require_tls: true
+
+  # Timeout for resolving alerts automatically if Prometheus stops sending them
+  resolve_timeout: 5m
+
+# ---------------------------------------------------------------------------
+# Routing tree
+# ---------------------------------------------------------------------------
+# The routing tree determines which receiver handles each alert.
+# It starts at the top-level route and matches child routes by labels.
+route:
+  # Group alerts by these labels – alerts with the same values are batched
+  group_by: ["alertname", "severity", "service"]
+
+  # Wait this long before sending the first notification for a new group.
+  # This allows time to collect more alerts in the same group.
+  group_wait: 10s
+
+  # Wait this long before sending notifications about new alerts in an
+  # existing group (after the first notification has been sent).
+  group_interval: 10s
+
+  # Wait this long before re-sending a notification for an alert that
+  # is still firing. Prevents notification spam.
+  repeat_interval: 1h
+
+  # Default receiver for all alerts
+  receiver: "webhook-notifications"
+
+  # Child routes for specific alert routing
+  routes:
+    # Critical alerts get their own route (could go to PagerDuty, etc.)
+    - match:
+        severity: critical
+      receiver: "webhook-notifications"
+      group_wait: 5s
+      repeat_interval: 30m
+      continue: false
+
+    # Warning alerts can have a longer repeat interval
+    - match:
+        severity: warning
+      receiver: "webhook-notifications"
+      group_wait: 30s
+      repeat_interval: 2h
+      continue: false
+
+# ---------------------------------------------------------------------------
+# Inhibition rules
+# ---------------------------------------------------------------------------
+# Inhibition rules suppress notifications for less severe alerts
+# when a more severe alert is already firing for the same service.
+inhibit_rules:
+  # If a critical alert fires, suppress warnings for the same service
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["service"]
+
+# ---------------------------------------------------------------------------
+# Receivers
+# ---------------------------------------------------------------------------
+# Receivers define where and how to send notifications.
+receivers:
+  # ---------------------------------------------------------------------------
+  # Webhook Receiver (default)
+  # ---------------------------------------------------------------------------
+  # Sends alert data as JSON POST to a webhook endpoint.
+  # For testing, you can use: https://webhook.site or a local listener.
+  - name: "webhook-notifications"
+    webhook_configs:
+      - url: "http://host.docker.internal:9095/webhook"
+        send_resolved: true
+        # Don't fail if the webhook endpoint is unavailable
+        # (useful for development when no webhook catcher is running)
+        http_config:
+          follow_redirects: true
+
+  # ---------------------------------------------------------------------------
+  # Email Receiver (commented – uncomment to use)
+  # ---------------------------------------------------------------------------
+  # - name: 'email-notifications'
+  #   email_configs:
+  #     - to: 'team-sre@example.com'
+  #       send_resolved: true
+  #       headers:
+  #         Subject: '[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}'
+
+  # ---------------------------------------------------------------------------
+  # Slack Receiver (commented – uncomment to use)
+  # ---------------------------------------------------------------------------
+  # - name: 'slack-notifications'
+  #   slack_configs:
+  #     - api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+  #       channel: '#alerts'
+  #       title: '{{ .GroupLabels.alertname }}'
+  #       text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+  #       send_resolved: true

@@ -1,0 +1,23 @@
+# =============================================================================
+# Grafana Dashboard Provisioning
+# =============================================================================
+# This file tells Grafana where to find dashboard JSON files.
+# Dashboards are loaded automatically at startup and can be updated
+# by modifying the JSON files (no manual import needed).
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: "Default"
+    orgId: 1
+    folder: "Observability"
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      # Path inside the Grafana container where dashboard JSON files are stored
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

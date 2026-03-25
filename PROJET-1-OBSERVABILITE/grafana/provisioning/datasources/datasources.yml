@@ -1,0 +1,50 @@
+# =============================================================================
+# Grafana Datasource Provisioning
+# =============================================================================
+# This file automatically configures datasources when Grafana starts.
+# No manual configuration needed via the Grafana UI.
+#
+# Grafana reads this file from:
+#   /etc/grafana/provisioning/datasources/datasources.yml
+# =============================================================================
+
+apiVersion: 1
+
+# Delete datasources that are no longer in this file
+deleteDatasources: []
+
+datasources:
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics
+  # ---------------------------------------------------------------------------
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      # Enable PromQL query builder
+      httpMethod: POST
+      # Scrape interval hint for Grafana panels
+      timeInterval: "15s"
+      # Enable exemplars (if available)
+      exemplarTraceIdDestinations: []
+
+  # ---------------------------------------------------------------------------
+  # Loki - Logs
+  # ---------------------------------------------------------------------------
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      # Maximum number of log lines to show
+      maxLines: 1000
+      # Link Loki logs to Prometheus metrics for correlation
+      derivedFields:
+        - datasourceUid: prometheus
+          matcherRegex: '"trace_id":"(\w+)"'
+          name: TraceID
+          url: ""

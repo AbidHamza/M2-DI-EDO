@@ -1,211 +1,313 @@
-# Projet 2 : CI/CD DevSecOps
+# Projet 2 : Pipeline CI/CD Securisee DevSecOps
 
-## Objectif du projet
+## Application de Gestion Financiere — M2 Expert DevOps (ENSITECH)
 
-Creer un pipeline CI/CD securise avec GitLab CI/CD, integrer des outils de scan de securite (Bandit, Trivy, SonarQube), et automatiser le deploiement securise. Ce projet peut etre realise entierement en local pour garantir la confidentialite.
+---
 
-## Duree estimee
+## Contexte et Objectifs
 
-3-4 heures (avec GitLab)
-4-5 heures (en local avec tous les outils)
+Ce projet s'inscrit dans le cadre du **M2 Expert DevOps** a ENSITECH. L'objectif est de concevoir et implementer une **pipeline CI/CD securisee** pour une application de gestion financiere, en appliquant les principes **DevSecOps**.
 
-## Prérequis
+### Objectifs pedagogiques
 
-- Compte GitLab avec un projet cree (pour la partie GitLab)
-- Docker installe
-- Python 3.8+ installe
-- Comprendre les concepts de base de Git
-- 4 Go de RAM minimum (pour SonarQube et les outils de monitoring locaux)
+- Comprendre les enjeux de securite dans un pipeline CI/CD
+- Maitriser l'integration de GitLab CI, SonarQube, Ansible et Terraform
+- Automatiser le deploiement d'une application dans un contexte critique (finance)
+- Garantir la **performance**, la **securite**, la **scalabilite** et la **tracabilite**
 
-## Deux approches possibles
+### Contraintes techniques
 
-Ce projet propose deux approches pour chaque etape :
-1. **Avec GitLab CI/CD** : Utilise les fonctionnalites integrees de GitLab
-2. **En local** : Tout fonctionne sur votre ordinateur (confidentialite garantie)
+| Contrainte | Implementation |
+|---|---|
+| Analyse SonarQube sur chaque commit | Stage `quality` dans le pipeline |
+| Gestion des secrets | GitLab CI/CD Variables, Ansible Vault, Terraform sensitive |
+| Automatisation complete | Pipeline 5 stages automatise |
+| Environnements reproductibles | dev / staging / prod via Terraform + tfvars |
+| Scalabilite | Architecture conteneurisee Docker |
+| Tracabilite | Logs structures, audit trail, versionning |
+| Monitoring | Prometheus + Grafana |
 
-Vous pouvez choisir l'approche qui vous convient le mieux, ou combiner les deux selon vos besoins.
+---
 
-## Parcours complet - Etapes du projet
-
-Ce projet est divise en 5 etapes progressives. Suivez-les dans l'ordre pour garantir votre succes.
-
-### Etape 01 : Configuration CI/CD de base
-
-**Objectif** : Creer un pipeline CI/CD basique qui s'execute en local ou avec GitLab
-
-**Duree** : 30-45 minutes
-
-**Ce que vous allez faire** :
-- Creer un pipeline CI/CD local avec scripts shell/batch
-- Ou configurer GitLab CI/CD avec .gitlab-ci.yml
-- Configurer les stages de base (build, test)
-- Tester le pipeline
-
-**Outils utilises** :
-- Scripts shell (Linux/Mac) ou batch (Windows)
-- GitLab CI/CD (optionnel)
-
-[Guide complet de l'etape 01](ETAPE-01-GITLAB-CI-BASE.md)
-
-### Etape 02 : Integration des outils de securite
-
-**Objectif** : Integrer des outils de scan de securite dans le pipeline
-
-**Duree** : 45 minutes-1h (avec GitLab), 1h-1h30 (en local avec SonarQube)
-
-**Ce que vous allez faire** :
-- Configurer Bandit pour scanner le code Python
-- Configurer Trivy pour scanner les vulnerabilites Docker
-- Configurer SonarQube pour l'analyse de qualite de code
-- Integrer les scans dans le pipeline CI/CD (GitLab ou local)
-- Consulter et analyser les rapports generes
-
-**Outils utilises** :
-- Bandit (scan de securite Python)
-- Trivy (scan de vulnerabilites)
-- SonarQube (analyse de qualite de code)
-
-[Guide complet de l'etape 02](ETAPE-02-SECURITE.md)
-
-### Etape 03 : Container Registry
-
-**Objectif** : Utiliser un Container Registry pour stocker les images Docker
-
-**Duree** : 30-45 minutes (avec GitLab), 45 minutes-1h (en local)
-
-**Ce que vous allez faire** :
-- Configurer GitLab Container Registry (optionnel)
-- Ou deployer un registry Docker local
-- Construire des images Docker
-- Pousser et recuperer des images depuis le registry
-- Gerer les versions d'images avec des tags
-
-**Outils utilises** :
-- GitLab Container Registry (optionnel)
-- Registry Docker local
-- Docker et Docker Compose
-
-[Guide complet de l'etape 03](ETAPE-03-CONTAINER-REGISTRY.md)
-
-### Etape 04 : Deploiement automatique
-
-**Objectif** : Automatiser le deploiement apres validation des tests
-
-**Duree** : 45 minutes-1h (avec GitLab et plateforme externe), 30-45 minutes (deploiement local)
-
-**Ce que vous allez faire** :
-- Configurer le deploiement automatique avec GitLab CI/CD (optionnel)
-- Ou creer un script de deploiement local
-- Deployer sur Railway, Render, ou Fly.io (optionnel)
-- Ou deployer localement avec Docker Compose
-- Configurer les conditions de deploiement
-
-**Outils utilises** :
-- GitLab CI/CD (optionnel)
-- Railway.app, Render.com, ou Fly.io (optionnel)
-- Docker Compose (pour deploiement local)
-
-[Guide complet de l'etape 04](ETAPE-04-DEPLOIEMENT-AUTO.md)
-
-### Etape 05 : Monitoring et alertes
-
-**Objectif** : Mettre en place le monitoring et les alertes
-
-**Duree** : 30-45 minutes (avec GitLab), 45 minutes-1h (monitoring local complet)
-
-**Ce que vous allez faire** :
-- Configurer le monitoring GitLab integre (optionnel)
-- Ou deployer Prometheus et Grafana localement
-- Configurer Uptime Kuma pour le monitoring de disponibilite
-- Creer des dashboards de visualisation
-- Configurer des alertes (email, webhook, etc.)
-
-**Outils utilises** :
-- GitLab Monitoring (optionnel)
-- Prometheus (collecte de metriques)
-- Grafana (visualisation)
-- Uptime Kuma (monitoring de disponibilite)
-
-[Guide complet de l'etape 05](ETAPE-05-MONITORING.md)
-
-## Validation finale
-
-Apres avoir termine toutes les etapes, vous devriez avoir :
-
-**Avec GitLab** :
-- Un pipeline CI/CD complet et securise
-- Des scans de securite automatiques (Bandit, Trivy, SonarQube)
-- Un Container Registry avec vos images Docker
-- Un deploiement automatique fonctionnel
-- Un monitoring en place avec alertes
-
-**En local** :
-- Un pipeline CI/CD local complet avec scripts
-- Des scans de securite locaux (Bandit, Trivy, SonarQube)
-- Un registry Docker local avec vos images
-- Un deploiement local fonctionnel
-- Un monitoring local complet (Prometheus, Grafana, Uptime Kuma)
-
-## Structure du projet
-
-Votre projet devrait avoir cette structure apres toutes les etapes :
+## Architecture Cible
 
 ```
-projet-devsecops/
-├── app.py                          # Application Python principale
-├── requirements.txt                # Dependances Python
-├── Dockerfile                      # Configuration Docker
-├── docker-compose.yml              # Configuration Docker Compose
-├── docker-compose-registry.yml     # Registry Docker local
-├── docker-compose-monitoring.yml   # Monitoring local
-├── docker-compose-deploy.yml       # Deploiement local
-├── prometheus.yml                  # Configuration Prometheus
-├── sonar-project.properties        # Configuration SonarQube
-├── .gitlab-ci.yml                  # Pipeline GitLab CI/CD (optionnel)
-├── build.sh / build.bat            # Script de build local
-├── test.sh / test.bat              # Script de test local
-├── scan-security.sh / scan-security.bat  # Script de scan securite
-├── build-and-push-local.sh / build-and-push-local.bat  # Build et push Docker
-├── deploy-local.sh / deploy-local.bat     # Deploiement local
-├── start-monitoring.sh / start-monitoring.bat  # Demarrage monitoring
-├── pipeline-local.sh / pipeline-local.bat     # Pipeline local complet
-└── tests/
-    └── test_app.py                 # Tests unitaires
+┌─────────────────────────────────────────────────────────────────┐
+│                        DEVELOPPEUR                              │
+│                    git push → GitLab                            │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   GITLAB CI PIPELINE                            │
+│                                                                 │
+│  ┌──────┐  ┌─────────┐  ┌──────────┐  ┌───────┐  ┌────────┐  │
+│  │ TEST │→ │ QUALITY │→ │ SECURITY │→ │ BUILD │→ │ DEPLOY │  │
+│  │pytest│  │SonarQube│  │Bandit    │  │Docker │  │Ansible │  │
+│  │      │  │         │  │Trivy     │  │       │  │Terraform│  │
+│  └──────┘  └─────────┘  └──────────┘  └───────┘  └────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               ENVIRONNEMENTS (Terraform)                        │
+│                                                                 │
+│  ┌─────────┐      ┌───────────┐      ┌────────────┐           │
+│  │   DEV   │      │  STAGING  │      │    PROD    │           │
+│  │ :5001   │      │  :5002    │      │   :5000    │           │
+│  └─────────┘      └───────────┘      └────────────┘           │
+└─────────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     MONITORING                                  │
+│                                                                 │
+│  ┌────────────┐  ┌─────────┐  ┌───────────────┐               │
+│  │ Prometheus │→ │ Grafana │  │ Node Exporter │               │
+│  │   :9090    │  │  :3000  │  │    :9100      │               │
+│  └────────────┘  └─────────┘  └───────────────┘               │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Ressources supplementaires
+---
 
-**Documentation officielle** :
-- [Documentation GitLab CI/CD](https://docs.gitlab.com/ee/ci/)
-- [Documentation Trivy](https://aquasecurity.github.io/trivy/)
-- [Documentation Bandit](https://bandit.readthedocs.io/)
-- [Documentation SonarQube](https://docs.sonarqube.org/)
-- [Documentation Prometheus](https://prometheus.io/docs/)
-- [Documentation Grafana](https://grafana.com/docs/)
+## Technologies
 
-**Outils gratuits utilises** :
-- Bandit : Scanner de securite Python (gratuit et open source)
-- Trivy : Scanner de vulnerabilites (gratuit et open source)
-- SonarQube Community Edition : Analyse de qualite de code (gratuit et open source)
-- Prometheus : Systeme de monitoring (gratuit et open source)
-- Grafana : Visualisation de metriques (gratuit et open source)
-- Uptime Kuma : Monitoring de disponibilite (gratuit et open source)
+| Outil | Role | Version recommandee |
+|---|---|---|
+| **GitLab CI** | Orchestration du pipeline CI/CD | GitLab 16+ |
+| **SonarQube** | Analyse statique de code (qualite + securite) | Community 10.x |
+| **Ansible** | Deploiement automatise et configuration | 2.15+ |
+| **Terraform** | Infrastructure as Code (IaC) | 1.6+ |
+| **Docker** | Conteneurisation de l'application | 24+ |
+| **Flask** | Framework web Python (application financiere) | 3.0+ |
+| **Prometheus** | Collecte de metriques | 2.48+ |
+| **Grafana** | Visualisation et dashboards | 10.x |
+| **Bandit** | Analyse securite du code Python | 1.7+ |
+| **Trivy** | Scan de vulnerabilites des images Docker | 0.48+ |
+| **pytest** | Tests unitaires Python | 8.0+ |
 
-## Notes importantes
+---
 
-- Toutes les etapes peuvent etre realisees en local pour garantir la confidentialite
-- Les outils utilises sont tous gratuits et open source
-- Le deploiement externe est optionnel, vous pouvez tout garder en local
-- Les guides sont detailles avec des explications pas a pas
-- Chaque etape inclut des solutions aux problemes courants
+## Structure du Projet
 
-## Confidentialite
+```
+projet-2-cicd-devsecops/
+│
+├── README.md                          # Ce fichier
+├── ETAPE-01-ETUDE-THEORIQUE.md       # Partie 1 : Theorie DevSecOps (30pts)
+├── ETAPE-02-APPLICATION-FINANCE.md   # Guide : Application Flask
+├── ETAPE-03-PIPELINE-GITLAB-CI.md    # Guide : Pipeline CI/CD
+├── ETAPE-04-SONARQUBE.md             # Guide : SonarQube
+├── ETAPE-05-TERRAFORM-INFRA.md       # Guide : Terraform
+├── ETAPE-06-ANSIBLE-DEPLOIEMENT.md   # Guide : Ansible
+├── ETAPE-07-MONITORING.md            # Guide : Monitoring
+├── ETAPE-08-SECURITE-SECRETS.md      # Guide : Securite & Secrets
+├── ETAPE-09-ANALYSE-AMELIORATIONS.md # Partie 4 : Analyse (10pts)
+│
+├── .gitlab-ci.yml                     # Pipeline GitLab CI complet
+├── .gitignore                         # Fichiers a ignorer
+│
+├── app/                               # Application Flask
+│   ├── app.py                         # Code principal
+│   ├── requirements.txt               # Dependances Python
+│   ├── Dockerfile                     # Image Docker multi-stage
+│   ├── .dockerignore                  # Exclusions Docker
+│   └── tests/                         # Tests unitaires
+│       ├── __init__.py
+│       └── test_app.py
+│
+├── sonarqube/                         # Configuration SonarQube
+│   ├── docker-compose-sonarqube.yml
+│   └── sonar-project.properties
+│
+├── terraform/                         # Infrastructure as Code
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── providers.tf
+│   └── environments/
+│       ├── dev.tfvars
+│       ├── staging.tfvars
+│       └── prod.tfvars
+│
+├── ansible/                           # Deploiement automatise
+│   ├── ansible.cfg
+│   ├── playbook.yml
+│   ├── inventory/
+│   │   ├── dev.ini
+│   │   ├── staging.ini
+│   │   └── prod.ini
+│   └── roles/
+│       └── deploy/
+│           ├── tasks/
+│           │   └── main.yml
+│           └── templates/
+│               └── docker-compose.yml.j2
+│
+├── monitoring/                        # Prometheus + Grafana
+│   ├── docker-compose-monitoring.yml
+│   ├── prometheus/
+│   │   └── prometheus.yml
+│   └── grafana/
+│       └── dashboards/
+│           └── finance-app.json
+│
+└── scripts/                           # Scripts utilitaires
+    ├── pipeline-local.sh              # Pipeline complet en local
+    ├── scan-security.sh               # Scans securite
+    ├── deploy-local.sh                # Deploiement local
+    └── start-monitoring.sh            # Demarrage monitoring
+```
 
-Si vous choisissez l'approche locale :
-- Aucune donnee n'est envoyee sur Internet
-- Tout fonctionne sur votre ordinateur
-- Les images Docker restent dans votre registry local
-- Les metriques sont collectees localement
-- La confidentialite est garantie a 100%
+---
 
-Bon apprentissage !
+## Prerequis
+
+### Logiciels requis
+
+```bash
+# Docker et Docker Compose
+docker --version        # >= 24.0
+docker compose version  # >= 2.20
+
+# Python 3.11+
+python3 --version
+
+# Terraform
+terraform --version     # >= 1.6
+
+# Ansible
+ansible --version       # >= 2.15
+
+# Git
+git --version
+```
+
+### Installation rapide (Ubuntu/Debian)
+
+```bash
+# Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+
+# Python + pip
+sudo apt install python3 python3-pip python3-venv -y
+
+# Terraform
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install terraform -y
+
+# Ansible
+pip3 install ansible
+
+# SonarScanner
+# Telecharger depuis https://docs.sonarqube.org/latest/analyzing-source-code/scanners/sonarscanner/
+```
+
+---
+
+## Guide de Demarrage Rapide
+
+### 1. Cloner le projet
+
+```bash
+git clone <url-du-repo>
+cd projet-2-cicd-devsecops
+```
+
+### 2. Lancer l'application en local
+
+```bash
+cd app
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+# → http://localhost:5000/health
+```
+
+### 3. Lancer les tests
+
+```bash
+cd app
+pytest tests/ -v --tb=short
+```
+
+### 4. Lancer SonarQube
+
+```bash
+cd sonarqube
+docker compose -f docker-compose-sonarqube.yml up -d
+# → http://localhost:9000 (admin/admin)
+```
+
+### 5. Deployer avec Terraform
+
+```bash
+cd terraform
+terraform init
+terraform plan -var-file=environments/dev.tfvars
+terraform apply -var-file=environments/dev.tfvars
+```
+
+### 6. Deployer avec Ansible
+
+```bash
+cd ansible
+ansible-playbook -i inventory/dev.ini playbook.yml
+```
+
+### 7. Lancer le monitoring
+
+```bash
+cd monitoring
+docker compose -f docker-compose-monitoring.yml up -d
+# Prometheus → http://localhost:9090
+# Grafana    → http://localhost:3000 (admin/admin)
+```
+
+### 8. Pipeline complet en local
+
+```bash
+chmod +x scripts/*.sh
+./scripts/pipeline-local.sh
+```
+
+---
+
+## Bareme de Notation
+
+| Partie | Points | Contenu |
+|---|---|---|
+| **Partie 1** : Theorie DevSecOps | **30 pts** | Definitions, comparaisons, architecture, enjeux securite |
+| **Partie 2** : Architecture CI/CD | **20 pts** | Schema pipeline, interactions outils, flux de donnees |
+| **Partie 3** : Integration DevOps | **40 pts** | Pipeline GitLab CI fonctionnel, tests, SonarQube, Docker, Ansible, Terraform |
+| **Partie 4** : Analyse | **10 pts** | Evaluation resultats, limites, ameliorations |
+| **TOTAL** | **100 pts** | |
+
+---
+
+## Livrables Attendus
+
+1. **Rapport detaille** (PDF, **45 pages minimum**) — Theorie, conception, implementation, analyse
+2. **Presentation PowerPoint** (**20+ slides minimum**) — Synthese du projet pour la soutenance
+3. **Schemas d'architecture** — Pipeline CI/CD + infrastructure
+4. **Code source** — Application Flask + tests
+5. **Scripts IaC** — Terraform + Ansible
+6. **Pipeline GitLab CI** — `.gitlab-ci.yml` + captures d'ecran
+7. **Repository Git** — Documente, structure, commits propres
+
+---
+
+## Auteurs
+
+- **Etudiants M2 Expert DevOps** — ENSITECH
+- **Annee** : 2025-2026
+
+---
+
+## Licence
+
+Projet academique — Usage pedagogique uniquement.

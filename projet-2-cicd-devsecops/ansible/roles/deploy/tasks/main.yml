@@ -1,0 +1,123 @@
+# =============================================================================
+# Deploy Role — Main Tasks
+# =============================================================================
+# Tasks executed to deploy the Finance App:
+# 1. Create deployment directory
+# 2. Generate docker-compose.yml from template
+# 3. Pull Docker image
+# 4. Deploy with docker compose
+# 5. Wait for application to start
+# 6. Health check validation
+# =============================================================================
+
+---
+# ---------------------------------------------------------------------------
+# Step 1: Create deployment directory
+# ---------------------------------------------------------------------------
+- name: Create deployment directory
+  file:
+    path: "{{ deploy_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# ---------------------------------------------------------------------------
+# Step 2: Generate docker-compose.yml from Jinja2 template
+# ---------------------------------------------------------------------------
+- name: Generate docker-compose.yml
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ deploy_path }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  register: compose_file
+
+# ---------------------------------------------------------------------------
+# Step 3: Pull the Docker image
+# ---------------------------------------------------------------------------
+- name: Pull Docker image
+  command: docker pull {{ app_image }}
+  register: pull_result
+  changed_when: "'Downloaded newer image' in pull_result.stdout or 'Pull complete' in pull_result.stdout"
+  failed_when: pull_result.rc != 0
+  ignore_errors: yes
+
+- name: Check if image exists locally (fallback)
+  command: docker image inspect {{ app_image }}
+  register: image_check
+  changed_when: false
+  failed_when: false
+  when: pull_result is failed
+
+- name: Fail if image is not available
+  fail:
+    msg: "Docker image {{ app_image }} is not available locally or remotely"
+  when: pull_result is failed and image_check.rc != 0
+
+# ---------------------------------------------------------------------------
+# Step 4: Stop existing containers (if any)
+# ---------------------------------------------------------------------------
+- name: Stop existing containers
+  command: docker compose -f {{ deploy_path }}/docker-compose.yml down --remove-orphans
+  args:
+    chdir: "{{ deploy_path }}"
+  register: stop_result
+  changed_when: stop_result.rc == 0
+  failed_when: false
+
+# ---------------------------------------------------------------------------
+# Step 5: Deploy with docker compose
+# ---------------------------------------------------------------------------
+- name: Deploy application with docker compose
+  command: docker compose -f {{ deploy_path }}/docker-compose.yml up -d
+  args:
+    chdir: "{{ deploy_path }}"
+  register: deploy_result
+
+- name: Display deployment result
+  debug:
+    msg: "{{ deploy_result.stdout_lines | default([]) }}"
+
+# ---------------------------------------------------------------------------
+# Step 6: Wait for application to start
+# ---------------------------------------------------------------------------
+- name: Wait for application to start
+  pause:
+    seconds: "{{ healthcheck_delay | default(5) }}"
+
+# ---------------------------------------------------------------------------
+# Step 7: Health check — validate the deployment
+# ---------------------------------------------------------------------------
+- name: Perform health check
+  uri:
+    url: "http://localhost:{{ app_port }}/health"
+    method: GET
+    return_content: yes
+    status_code: 200
+    timeout: 10
+  register: healthcheck
+  retries: "{{ healthcheck_retries | default(5) }}"
+  delay: "{{ healthcheck_delay | default(5) }}"
+  until: healthcheck.status == 200
+
+- name: Display health check result
+  debug:
+    msg: |
+      Health Check Result:
+        Status:  {{ healthcheck.json.status }}
+        Version: {{ healthcheck.json.version }}
+        Service: {{ healthcheck.json.service }}
+
+# ---------------------------------------------------------------------------
+# Step 8: Show running containers
+# ---------------------------------------------------------------------------
+- name: Show running containers
+  command: docker ps --filter "label=project={{ app_name }}" --format "table {{'{{'}}.Names{{'}}'}}\t{{'{{'}}.Status{{'}}'}}\t{{'{{'}}.Ports{{'}}'}}"
+  register: running_containers
+  changed_when: false
+
+- name: Display running containers
+  debug:
+    msg: "{{ running_containers.stdout_lines }}"

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+*.egg
+
+# Testing
+.pytest_cache/
+htmlcov/
+coverage.xml
+report.xml
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+*.md
+LICENSE
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Security scan reports
+bandit-report.json
+trivy-report.json

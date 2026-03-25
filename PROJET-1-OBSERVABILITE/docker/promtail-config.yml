@@ -1,0 +1,88 @@
+# =============================================================================
+# Promtail Configuration
+# =============================================================================
+# Promtail is the log collector agent that discovers, tails, and ships
+# container logs to Loki. It works similarly to how Prometheus discovers
+# and scrapes metric targets.
+#
+# Flow: Docker containers → stdout/stderr → Docker log files → Promtail → Loki
+# =============================================================================
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+# ---------------------------------------------------------------------------
+# Position tracking
+# ---------------------------------------------------------------------------
+# Promtail tracks which log lines it has already sent to Loki.
+# If Promtail restarts, it resumes from the last known position.
+positions:
+  filename: /tmp/positions.yaml
+
+# ---------------------------------------------------------------------------
+# Loki client configuration
+# ---------------------------------------------------------------------------
+# Where to send the collected logs
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+# ---------------------------------------------------------------------------
+# Scrape configuration
+# ---------------------------------------------------------------------------
+# Defines how Promtail discovers and processes log sources.
+scrape_configs:
+  # ---------------------------------------------------------------------------
+  # Docker container log discovery
+  # ---------------------------------------------------------------------------
+  # Uses the Docker socket to discover running containers and read their logs.
+  # Labels are automatically extracted from Docker container metadata.
+  - job_name: docker
+    docker_sd_configs:
+      # Discover containers via the Docker socket
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          # Only collect logs from containers on the observability network
+          - name: network
+            values: ["observability-net"]
+
+    relabel_configs:
+      # Extract the container name and use it as a label
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: "container_name"
+
+      # Extract the Docker Compose service name
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        target_label: "compose_service"
+
+      # Extract the container ID (first 12 characters)
+      - source_labels: ["__meta_docker_container_id"]
+        target_label: "container_id"
+
+      # Use container name as the job label for easier querying
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: "job"
+
+    # Pipeline stages process and transform log lines before sending to Loki
+    pipeline_stages:
+      # Try to parse JSON log lines (from our Flask app)
+      - json:
+          expressions:
+            level: levelname
+            message: message
+            timestamp: asctime
+      # If JSON parsing succeeds, use the extracted level as a label
+      - labels:
+          level:
+      # Set the timestamp from the log line (if available)
+      - timestamp:
+          source: timestamp
+          format: "2006-01-02T15:04:05"
+          fallback_formats:
+            - "2006-01-02T15:04:05Z07:00"
+      # Output the processed log line
+      - output:
+          source: message

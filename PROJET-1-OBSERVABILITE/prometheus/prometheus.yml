@@ -1,0 +1,92 @@
+# =============================================================================
+# Prometheus Configuration
+# =============================================================================
+# This file defines:
+#   - Global settings (scrape interval, evaluation interval)
+#   - Alert rules file references
+#   - Alertmanager connection
+#   - Scrape targets (what to monitor)
+# =============================================================================
+
+global:
+  # How often Prometheus scrapes targets (collects metrics)
+  scrape_interval: 15s
+
+  # How often Prometheus evaluates alert rules
+  evaluation_interval: 15s
+
+  # Attach these labels to all time series, alerts, and federation
+  external_labels:
+    cluster: "observability-demo"
+    environment: "development"
+
+# =============================================================================
+# Alert Rules
+# =============================================================================
+# Reference to the file containing alerting rules.
+# Prometheus evaluates these rules every evaluation_interval.
+
+rule_files:
+  - "alert-rules.yml"
+
+# =============================================================================
+# Alertmanager Configuration
+# =============================================================================
+# Where to send alerts when rules fire.
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+
+# =============================================================================
+# Scrape Configurations
+# =============================================================================
+# Each job defines a set of targets to scrape and how to scrape them.
+
+scrape_configs:
+  # ---------------------------------------------------------------------------
+  # Job 1: Flask Application
+  # ---------------------------------------------------------------------------
+  # Scrapes our instrumented Flask app for custom application metrics:
+  #   - flask_http_requests_total (Counter)
+  #   - flask_http_request_duration_seconds (Histogram)
+  #   - flask_active_requests (Gauge)
+  - job_name: "flask-app"
+    scrape_interval: 15s
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["app:5000"]
+        labels:
+          service: "flask-demo"
+          team: "backend"
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Node Exporter (Host/System Metrics)
+  # ---------------------------------------------------------------------------
+  # Scrapes system-level metrics from the host machine:
+  #   - CPU usage, memory, disk, network, filesystem
+  #   - These metrics power the Infrastructure dashboard
+  - job_name: "node-exporter"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          service: "node-exporter"
+          team: "infrastructure"
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Prometheus Self-Monitoring
+  # ---------------------------------------------------------------------------
+  # Prometheus can monitor itself. This is useful for:
+  #   - Tracking scrape durations and failures
+  #   - Monitoring TSDB storage usage
+  #   - Alerting if Prometheus itself is degraded
+  - job_name: "prometheus"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          service: "prometheus"
+          team: "observability"

@@ -1,0 +1,96 @@
+# =============================================================================
+# .gitignore — DevSecOps Finance App
+# =============================================================================
+
+# --- Secrets and credentials (NEVER commit these!) ---
+*.pem
+*.key
+*.crt
+*.p12
+.env
+.env.*
+!.env.example
+secrets.yml
+secrets.tfvars
+.vault_password
+ansible-vault-password
+*.secret
+
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+venv/
+.venv/
+env/
+.env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Testing ---
+.pytest_cache/
+htmlcov/
+coverage.xml
+report.xml
+.coverage
+.coverage.*
+nosetests.xml
+
+# --- Security scan reports ---
+bandit-report.json
+trivy-report.json
+trivy-fs-report.json
+trivy-image-report.json
+pip-audit-report.json
+
+# --- SonarQube ---
+.sonar/
+.scannerwork/
+
+# --- Docker ---
+# Do not ignore Dockerfile or docker-compose files
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Misc ---
+*.bak
+*.tmp
+*.temp

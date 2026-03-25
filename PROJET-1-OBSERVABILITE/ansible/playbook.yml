@@ -1,0 +1,133 @@
+# =============================================================================
+# Ansible Playbook - Deploy Observability Stack
+# =============================================================================
+# This playbook automates the complete deployment of the observability stack:
+#   1. Verifies Docker is installed
+#   2. Creates directory structure
+#   3. Copies configuration files (using Jinja2 templates)
+#   4. Builds the application image
+#   5. Starts the stack with docker-compose
+#   6. Waits for all services to be healthy
+#   7. Displays access URLs
+#
+# Usage:
+#   ansible-playbook -i inventory.ini playbook.yml
+#
+# Dry run:
+#   ansible-playbook -i inventory.ini playbook.yml --check
+# =============================================================================
+
+---
+- name: Deploy Observability Stack
+  hosts: observability
+  become: yes
+  gather_facts: yes
+
+  vars:
+    # Project paths
+    project_root: "{{ playbook_dir }}/.."
+    deploy_dir: "/opt/observability"
+
+    # Application settings
+    app_name: "flask-app"
+    app_port: 5000
+
+    # Prometheus settings
+    prometheus_port: 9090
+    scrape_interval: "15s"
+    prometheus_retention: "15d"
+
+    # Grafana settings
+    grafana_port: 3000
+    grafana_admin_user: "admin"
+    grafana_admin_password: "admin"
+
+    # Loki settings
+    loki_port: 3100
+
+    # Alertmanager settings
+    alertmanager_port: 9093
+    alert_webhook_url: "http://host.docker.internal:9095/webhook"
+
+    # Node Exporter settings
+    node_exporter_port: 9100
+
+  # Execute the observability role
+  roles:
+    - observability
+
+  # Tasks executed after the role completes
+  post_tasks:
+    # -----------------------------------------------------------------
+    # Wait for services to be ready
+    # -----------------------------------------------------------------
+    - name: Wait for Prometheus to be ready
+      uri:
+        url: "http://localhost:{{ prometheus_port }}/-/healthy"
+        method: GET
+        status_code: 200
+      register: prometheus_health
+      retries: 30
+      delay: 5
+      until: prometheus_health.status == 200
+      tags: [verify]
+
+    - name: Wait for Grafana to be ready
+      uri:
+        url: "http://localhost:{{ grafana_port }}/api/health"
+        method: GET
+        status_code: 200
+      register: grafana_health
+      retries: 30
+      delay: 5
+      until: grafana_health.status == 200
+      tags: [verify]
+
+    - name: Wait for Loki to be ready
+      uri:
+        url: "http://localhost:{{ loki_port }}/ready"
+        method: GET
+        status_code: 200
+      register: loki_health
+      retries: 30
+      delay: 5
+      until: loki_health.status == 200
+      tags: [verify]
+
+    - name: Wait for Flask application to be ready
+      uri:
+        url: "http://localhost:{{ app_port }}/health"
+        method: GET
+        status_code: 200
+      register: app_health
+      retries: 30
+      delay: 5
+      until: app_health.status == 200
+      tags: [verify]
+
+    # -----------------------------------------------------------------
+    # Display results
+    # -----------------------------------------------------------------
+    - name: Display deployment summary
+      debug:
+        msg: |
+          ============================================================
+          Observability Stack Deployed Successfully!
+          ============================================================
+
+          Services:
+            - Application:   http://localhost:{{ app_port }}
+            - Prometheus:    http://localhost:{{ prometheus_port }}
+            - Grafana:       http://localhost:{{ grafana_port }} ({{ grafana_admin_user }}/{{ grafana_admin_password }})
+            - Loki:          http://localhost:{{ loki_port }}
+            - Alertmanager:  http://localhost:{{ alertmanager_port }}
+            - Node Exporter: http://localhost:{{ node_exporter_port }}
+
+          Health Checks:
+            - Prometheus: {{ 'OK' if prometheus_health.status == 200 else 'FAILED' }}
+            - Grafana:    {{ 'OK' if grafana_health.status == 200 else 'FAILED' }}
+            - Loki:       {{ 'OK' if loki_health.status == 200 else 'FAILED' }}
+            - App:        {{ 'OK' if app_health.status == 200 else 'FAILED' }}
+
+          ============================================================
+      tags: [verify]

@@ -1,0 +1,191 @@
+# =============================================================================
+# Docker Compose - Complete Observability Stack
+# =============================================================================
+# Services:
+#   - app:            Flask application with Prometheus instrumentation
+#   - prometheus:     Metrics collection and storage (TSDB)
+#   - grafana:        Visualization dashboards
+#   - loki:           Log aggregation and storage
+#   - promtail:       Log collector (Docker logs → Loki)
+#   - alertmanager:   Alert routing and notification
+#   - node-exporter:  Host/system metrics exporter
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Flask Application (instrumented with Prometheus metrics)
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: ../app
+      dockerfile: Dockerfile
+    container_name: observability-app
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - ENV=production
+      - LOG_LEVEL=INFO
+    networks:
+      - observability-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "observability.service=flask-app"
+      - "observability.metrics=true"
+
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics Collection & Storage
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: observability-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      # Enable various Prometheus features
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    networks:
+      - observability-net
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Grafana - Visualization & Dashboards
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: observability-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Default admin credentials (change in production!)
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Allow anonymous access for demo purposes (disable in production)
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      # Install useful plugins
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      # Auto-provisioning: datasources and dashboards are loaded at startup
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - observability-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+
+  # ---------------------------------------------------------------------------
+  # Loki - Log Aggregation & Storage
+  # ---------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: observability-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - observability-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Promtail - Log Collector (Docker logs → Loki)
+  # ---------------------------------------------------------------------------
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: observability-promtail
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      # Mount Docker socket to discover and read container logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount Docker container log directory
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - observability-net
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  # ---------------------------------------------------------------------------
+  # Alertmanager - Alert Routing & Notifications
+  # ---------------------------------------------------------------------------
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: observability-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    networks:
+      - observability-net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Node Exporter - Host/System Metrics
+  # ---------------------------------------------------------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: observability-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      # Mount host filesystem as read-only for accurate host metrics
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - observability-net
+    restart: unless-stopped
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  observability-net:
+    name: observability-net
+    driver: bridge
+
+# =============================================================================
+# Volumes (persistent data)
+# =============================================================================
+volumes:
+  prometheus_data:
+    name: observability-prometheus-data
+  grafana_data:
+    name: observability-grafana-data
+  loki_data:
+    name: observability-loki-data
+  alertmanager_data:
+    name: observability-alertmanager-data

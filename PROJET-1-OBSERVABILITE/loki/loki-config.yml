@@ -1,0 +1,91 @@
+# =============================================================================
+# Loki Configuration
+# =============================================================================
+# Loki is deployed in "single binary" mode (monolithic) for simplicity.
+# In production, Loki can be deployed in microservice mode with separate
+# distributor, ingester, querier, and compactor components.
+#
+# Key design principle: Loki indexes LABELS only, not log content.
+# This makes it much more storage-efficient than Elasticsearch/ELK.
+# =============================================================================
+
+# Authentication disabled for development (enable in production)
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+# ---------------------------------------------------------------------------
+# Common configuration shared across components
+# ---------------------------------------------------------------------------
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+
+# ---------------------------------------------------------------------------
+# Query range configuration
+# ---------------------------------------------------------------------------
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+# ---------------------------------------------------------------------------
+# Schema configuration
+# ---------------------------------------------------------------------------
+# Defines how Loki stores and indexes log data.
+# The schema version determines the index and chunk format.
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# ---------------------------------------------------------------------------
+# Ruler configuration (for alerting via Loki – optional)
+# ---------------------------------------------------------------------------
+ruler:
+  alertmanager_url: http://alertmanager:9093
+
+# ---------------------------------------------------------------------------
+# Limits configuration
+# ---------------------------------------------------------------------------
+limits_config:
+  # Reject logs older than 168 hours (7 days)
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  # Maximum number of label names per log stream
+  max_label_names_per_series: 30
+
+# ---------------------------------------------------------------------------
+# Compactor configuration (handles retention and index compaction)
+# ---------------------------------------------------------------------------
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: filesystem
+
+# ---------------------------------------------------------------------------
+# Table manager (retention enforcement)
+# ---------------------------------------------------------------------------
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 168h

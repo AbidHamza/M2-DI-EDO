@@ -1,0 +1,71 @@
+# =============================================================================
+# Ansible Playbook — Deploy Finance Application
+# =============================================================================
+# Main playbook that orchestrates the deployment of the finance app.
+# Uses the 'deploy' role for the actual deployment tasks.
+#
+# Usage:
+#   ansible-playbook -i inventory/dev.ini playbook.yml
+#   ansible-playbook -i inventory/prod.ini playbook.yml \
+#     --extra-vars "app_image=registry.example.com/finance-app:v1.2.3"
+# =============================================================================
+
+---
+- name: Deploy Finance Application
+  hosts: app_servers
+  become: yes
+  gather_facts: yes
+
+  # Default variables (can be overridden by inventory or --extra-vars)
+  vars:
+    app_name: "finance-app"
+    app_image: "finance-app:latest"
+    app_version: "latest"
+    app_port: 5000
+    app_internal_port: 5000
+    environment: "dev"
+    log_level: "INFO"
+    debug_mode: "false"
+    deploy_path: "/opt/finance-app"
+    healthcheck_retries: 5
+    healthcheck_delay: 5
+
+  # Pre-tasks: verify prerequisites
+  pre_tasks:
+    - name: Display deployment info
+      debug:
+        msg: |
+          === DEPLOYMENT INFO ===
+          Application: {{ app_name }}
+          Image:       {{ app_image }}
+          Version:     {{ app_version }}
+          Environment: {{ environment }}
+          Port:        {{ app_port }}
+          Target:      {{ inventory_hostname }}
+          ========================
+
+    - name: Verify Docker is installed
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Display Docker version
+      debug:
+        msg: "Docker version: {{ docker_version.stdout }}"
+
+  # Main deployment role
+  roles:
+    - role: deploy
+
+  # Post-tasks: validate deployment
+  post_tasks:
+    - name: Final deployment status
+      debug:
+        msg: |
+          === DEPLOYMENT COMPLETE ===
+          App URL:     http://{{ ansible_host | default('localhost') }}:{{ app_port }}
+          Health:      http://{{ ansible_host | default('localhost') }}:{{ app_port }}/health
+          Metrics:     http://{{ ansible_host | default('localhost') }}:{{ app_port }}/metrics
+          Environment: {{ environment }}
+          Version:     {{ app_version }}
+          ============================
